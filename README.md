@@ -8,9 +8,10 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 |---|---|
 | `apps-script/Code.gs` | `setupSistem`, `parseKehadiran`, `simpanKehadiran`, `prosesUpload`, `doGet`, `testParse` |
 | `apps-script/Dashboard.gs` | `binaDashboard` — bina tab Dashboard, Analisis, Trend |
+| `apps-script/Padam.gs` | Menu **Kehadiran > Padam data satu tarikh** dalam Sheet |
 | `apps-script/Index.html` | Borang upload (tarikh + fail CSV) |
 | `apps-script/appsscript.json` | Zon masa `Asia/Kuala_Lumpur`, web app "Me" / "Only myself" |
-| `test/parse.test.js` | Ujian parser di luar Apps Script: `node test/parse.test.js` |
+| `test/parse.test.js`, `test/padam.test.js` | Ujian di luar Apps Script: `node test/parse.test.js` |
 
 ## Pasang
 
@@ -36,5 +37,6 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 - Jika satu baris CSV gagal, seluruh upload dibatalkan dan baris bermasalah dipaparkan.
 - Jika fail pernah dibuka dalam Excel, nilai seperti `12/18` jadi `18-Dec`. Sistem baca semula sebagai hadir 12 / jumlah 18 (bulan = hadir, hari = jumlah), paparkan senarai pembetulan, dan hanya simpan selepas pengguna tekan **Sahkan & Simpan**.
 - Tarikh akan datang ditolak.
+- Data tersalah tarikh dipadam melalui menu **Kehadiran > Padam data satu tarikh**. Jangan padam seluruh baris secara manual (formula peratus di F2 akan hilang).
 - Kelas dikenal pasti dengan gabungan Tingkatan + Kelas.
 - Peratus dalam Analisis dan Trend ialah purata berwajaran (jumlah hadir / jumlah murid), bukan purata peratus kelas.
