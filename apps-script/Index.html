@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 640px; margin: 24px auto; padding: 0 16px; color: #202124; }
+    h1 { font-size: 20px; }
+    label { display: block; margin-top: 16px; font-weight: bold; }
+    input { margin-top: 6px; font-size: 15px; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 15px; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    #mesej { margin-top: 20px; padding: 12px; border-radius: 6px; display: none; white-space: pre-wrap; }
+    .ok { background: #e6f4ea; border: 1px solid #34a853; }
+    .ralat { background: #fce8e6; border: 1px solid #d93025; }
+    table { border-collapse: collapse; margin-top: 12px; width: 100%; font-size: 13px; }
+    th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; vertical-align: top; }
+  </style>
+</head>
+<body>
+  <h1>Upload Kehadiran Harian</h1>
+
+  <label for="tarikh">Tarikh kehadiran</label>
+  <input type="date" id="tarikh" required>
+
+  <label for="fail">Fail CSV dari IDME</label>
+  <input type="file" id="fail" accept=".csv,text/csv">
+
+  <button id="hantar">Hantar</button>
+
+  <div id="mesej"></div>
+
+  <script>
+    const elTarikh = document.getElementById('tarikh');
+    const elFail = document.getElementById('fail');
+    const elHantar = document.getElementById('hantar');
+    const elMesej = document.getElementById('mesej');
+
+    // Default: tarikh hari ini (waktu peranti).
+    const kini = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const hariIni = kini.getFullYear() + '-' + pad(kini.getMonth() + 1) + '-' + pad(kini.getDate());
+    elTarikh.value = hariIni;
+    elTarikh.max = hariIni;
+
+    function papar(ok, teks, gagal) {
+      elMesej.className = ok ? 'ok' : 'ralat';
+      elMesej.style.display = 'block';
+      elMesej.textContent = teks;
+      if (gagal && gagal.length) {
+        const t = document.createElement('table');
+        const h = t.insertRow();
+        ['Baris', 'Kandungan', 'Sebab'].forEach(x => { const th = document.createElement('th'); th.textContent = x; h.appendChild(th); });
+        gagal.forEach(g => {
+          const r = t.insertRow();
+          [g.baris, g.kandungan, g.sebab].forEach(x => { r.insertCell().textContent = String(x); });
+        });
+        elMesej.appendChild(t);
+      }
+    }
+
+    elHantar.addEventListener('click', () => {
+      const tarikh = elTarikh.value;
+      const fail = elFail.files[0];
+      if (!tarikh) return papar(false, 'Sila pilih tarikh.');
+      if (!fail) return papar(false, 'Sila pilih fail CSV.');
+      if (fail.size > 1024 * 1024) return papar(false, 'Fail terlalu besar (had 1 MB).');
+
+      const [y, m, d] = tarikh.split('-');
+      if (!confirm('Simpan data kehadiran untuk ' + d + '/' + m + '/' + y + '?\nFail: ' + fail.name)) return;
+
+      elHantar.disabled = true;
+      papar(true, 'Memproses...');
+
+      const pembaca = new FileReader();
+      pembaca.onload = () => {
+        google.script.run
+          .withSuccessHandler(h => {
+            elHantar.disabled = false;
+            papar(h.ok, h.mesej, h.gagal);
+            if (h.ok) elFail.value = '';
+          })
+          .withFailureHandler(e => {
+            elHantar.disabled = false;
+            papar(false, 'Ralat pelayan: ' + (e && e.message ? e.message : e));
+          })
+          .prosesUpload(tarikh, pembaca.result);
+      };
+      pembaca.onerror = () => { elHantar.disabled = false; papar(false, 'Fail tidak dapat dibaca.'); };
+      pembaca.readAsText(fail, 'UTF-8');
+    });
+  </script>
+</body>
+</html>
