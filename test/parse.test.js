@@ -10,7 +10,7 @@ vm.createContext(ctx);
 vm.runInContext(kod + '\nthis.parseKehadiran = parseKehadiran; this.testParse = testParse;', ctx);
 const { parseKehadiran } = ctx;
 
-const HEADER = '﻿Bil.,Tahun/Tingkatan,Kelas,Kehadiran,Jumlah Pelajar';
+const HEADER = '\uFEFFBil.,Tahun/Tingkatan,Kelas,Kehadiran,Jumlah Pelajar';
 const csv = (baris) => [HEADER, ...baris].join('\r\n') + '\r\n';
 let lulus = 0;
 const uji = (nama, fn) => { fn(); lulus++; console.log('LULUS', nama); };
@@ -70,5 +70,48 @@ uji('fail kosong / header sahaja', () => {
   assert.strictEqual(parseKehadiran('').gagal.length, 1);
   assert.match(parseKehadiran(csv([',,,,'])).gagal[0].sebab, /Tiada baris data/);
 });
+
+uji('nilai ditukar Excel jadi tarikh dibetulkan', () => {
+  const h = parseKehadiran([
+    'Bil.,Tahun/Tingkatan,Kelas,Kehadiran,Jumlah Pelajar',
+    '1,TINGKATAN TIGA,EHSAN,KEHADIRAN TELAH DIKEMASKINI,18-Dec',
+    ',,,,',
+    '2,TINGKATAN LIMA,PRODUKTIF,KEHADIRAN TELAH DIKEMASKINI,15-Nov',
+    ',,,,',
+    '3,KELAS KHAS MENENGAH,DEDIKASI,KEHADIRAN TELAH DIKEMASKINI,5-May',
+    ',,,,',
+    '4,TINGKATAN ENAM SEM 1,6B1,KEHADIRAN TELAH DIKEMASKINI,2-feb',
+    ',,,,',
+    '5,TINGKATAN ENAM SEM 1,6B2,KEHADIRAN TELAH DIKEMASKINI,13-Dis',
+    ',,,,',
+    '6,TINGKATAN ENAM SEM 1,6B3,KEHADIRAN TELAH DIKEMASKINI,21/24',
+  ].join('\n') + '\n');
+  assert.strictEqual(h.gagal.length, 0, JSON.stringify(h.gagal));
+  assert.deepStrictEqual(h.rows.map((r) => `${r.hadir}/${r.jumlah}`).join(','), '12/18,11/15,5/5,2/2,12/13,21/24');
+  assert.deepStrictEqual(h.pembetulan.map((p) => `${p.baris}:${p.asal}>${p.baru}`).join(','),
+    '2:18-Dec>12/18,4:15-Nov>11/15,6:5-May>5/5,8:2-feb>2/2,10:13-Dis>12/13');
+});
+
+uji('tarikh yang tak masuk akal tetap ditolak', () => {
+  const h = parseKehadiran(csv([
+    '1,TINGKATAN SATU,AMANAH,Kehadiran,3-Dec',   // 12/3: hadir > jumlah
+    '2,TINGKATAN SATU,BESTARI,Kehadiran,18-Xyz', // bulan tak dikenali
+    '3,TINGKATAN SATU,CEKAL,Kehadiran,18/12/2026',
+  ]));
+  assert.strictEqual(h.rows.length, 0);
+  assert.strictEqual(h.gagal.length, 3);
+  assert.strictEqual(h.pembetulan.length, 0);
+});
+
+// Fail sebenar tak disimpan dalam repo (repo public). Uji jika diberi:
+//   CSV_SEBENAR=/path/kehadiran.csv node test/parse.test.js
+if (process.env.CSV_SEBENAR) {
+  uji('fail sebenar: ' + path.basename(process.env.CSV_SEBENAR), () => {
+    const h = parseKehadiran(fs.readFileSync(process.env.CSV_SEBENAR, 'utf8'));
+    assert.strictEqual(h.gagal.length, 0, JSON.stringify(h.gagal));
+    console.log(`  ${h.rows.length} kelas, ${h.pembetulan.length} dibetulkan:`);
+    h.pembetulan.forEach((p) => console.log(`  baris ${p.baris} ${p.tingkatan} ${p.kelas}: ${p.asal} -> ${p.baru}`));
+  });
+}
 
 console.log(`\n${lulus} ujian lulus.`);

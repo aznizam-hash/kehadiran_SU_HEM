@@ -34,6 +34,7 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 
 - Satu tarikh hanya boleh diupload sekali. Upload kedua untuk tarikh sama ditolak.
 - Jika satu baris CSV gagal, seluruh upload dibatalkan dan baris bermasalah dipaparkan.
+- Jika fail pernah dibuka dalam Excel, nilai seperti `12/18` jadi `18-Dec`. Sistem baca semula sebagai hadir 12 / jumlah 18 (bulan = hadir, hari = jumlah), paparkan senarai pembetulan, dan hanya simpan selepas pengguna tekan **Sahkan & Simpan**.
 - Tarikh akan datang ditolak.
 - Kelas dikenal pasti dengan gabungan Tingkatan + Kelas.
 - Peratus dalam Analisis dan Trend ialah purata berwajaran (jumlah hadir / jumlah murid), bukan purata peratus kelas.

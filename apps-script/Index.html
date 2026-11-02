@@ -13,6 +13,7 @@
     #mesej { margin-top: 20px; padding: 12px; border-radius: 6px; display: none; white-space: pre-wrap; }
     .ok { background: #e6f4ea; border: 1px solid #34a853; }
     .ralat { background: #fce8e6; border: 1px solid #d93025; }
+    .amaran { background: #fef7e0; border: 1px solid #f9ab00; }
     table { border-collapse: collapse; margin-top: 12px; width: 100%; font-size: 13px; }
     th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; vertical-align: top; }
   </style>
@@ -43,20 +44,61 @@
     elTarikh.value = hariIni;
     elTarikh.max = hariIni;
 
-    function papar(ok, teks, gagal) {
-      elMesej.className = ok ? 'ok' : 'ralat';
+    function jadual(tajuk, senarai) {
+      const t = document.createElement('table');
+      const h = t.insertRow();
+      tajuk.forEach(x => { const th = document.createElement('th'); th.textContent = x; h.appendChild(th); });
+      senarai.forEach(baris => {
+        const r = t.insertRow();
+        baris.forEach(x => { r.insertCell().textContent = String(x); });
+      });
+      return t;
+    }
+
+    function papar(ok, teks, gagal, kelas) {
+      elMesej.className = kelas || (ok ? 'ok' : 'ralat');
       elMesej.style.display = 'block';
       elMesej.textContent = teks;
       if (gagal && gagal.length) {
-        const t = document.createElement('table');
-        const h = t.insertRow();
-        ['Baris', 'Kandungan', 'Sebab'].forEach(x => { const th = document.createElement('th'); th.textContent = x; h.appendChild(th); });
-        gagal.forEach(g => {
-          const r = t.insertRow();
-          [g.baris, g.kandungan, g.sebab].forEach(x => { r.insertCell().textContent = String(x); });
-        });
-        elMesej.appendChild(t);
+        elMesej.appendChild(jadual(['Baris', 'Kandungan', 'Sebab'],
+          gagal.map(g => [g.baris, g.kandungan, g.sebab])));
       }
+    }
+
+    // Hantar ke pelayan. sahkan=true hanya selepas pengguna setuju dengan pembetulan.
+    function hantar(tarikh, teksCsv, sahkan) {
+      elHantar.disabled = true;
+      papar(true, 'Memproses...');
+      google.script.run
+        .withSuccessHandler(h => {
+          elHantar.disabled = false;
+          if (h.perluSahkan) return paparPembetulan(h, tarikh, teksCsv);
+          papar(h.ok, h.mesej, h.gagal);
+          if (h.ok) elFail.value = '';
+        })
+        .withFailureHandler(e => {
+          elHantar.disabled = false;
+          papar(false, 'Ralat pelayan: ' + (e && e.message ? e.message : e));
+        })
+        .prosesUpload(tarikh, teksCsv, sahkan);
+    }
+
+    function paparPembetulan(h, tarikh, teksCsv) {
+      papar(false, h.mesej, null, 'amaran');
+      elMesej.appendChild(jadual(['Baris', 'Tingkatan', 'Kelas', 'Dalam fail', 'Dibaca sebagai (hadir/jumlah)'],
+        h.pembetulan.map(p => [p.baris, p.tingkatan, p.kelas, p.asal, p.baru])));
+
+      const bSah = document.createElement('button');
+      bSah.textContent = 'Sahkan & Simpan';
+      const bBatal = document.createElement('button');
+      bBatal.textContent = 'Batal';
+      bBatal.style.marginLeft = '8px';
+      bSah.onclick = () => hantar(tarikh, teksCsv, true);
+      bBatal.onclick = () => papar(false, 'Dibatalkan. Tiada data disimpan.');
+      elMesej.appendChild(bSah);
+      elMesej.appendChild(bBatal);
+      elHantar.disabled = true;
+      bBatal.addEventListener('click', () => { elHantar.disabled = false; });
     }
 
     elHantar.addEventListener('click', () => {
@@ -69,23 +111,8 @@
       const [y, m, d] = tarikh.split('-');
       if (!confirm('Simpan data kehadiran untuk ' + d + '/' + m + '/' + y + '?\nFail: ' + fail.name)) return;
 
-      elHantar.disabled = true;
-      papar(true, 'Memproses...');
-
       const pembaca = new FileReader();
-      pembaca.onload = () => {
-        google.script.run
-          .withSuccessHandler(h => {
-            elHantar.disabled = false;
-            papar(h.ok, h.mesej, h.gagal);
-            if (h.ok) elFail.value = '';
-          })
-          .withFailureHandler(e => {
-            elHantar.disabled = false;
-            papar(false, 'Ralat pelayan: ' + (e && e.message ? e.message : e));
-          })
-          .prosesUpload(tarikh, pembaca.result);
-      };
+      pembaca.onload = () => hantar(tarikh, pembaca.result, false);
       pembaca.onerror = () => { elHantar.disabled = false; papar(false, 'Fail tidak dapat dibaca.'); };
       pembaca.readAsText(fail, 'UTF-8');
     });
