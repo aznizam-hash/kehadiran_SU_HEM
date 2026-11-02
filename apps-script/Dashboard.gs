@@ -91,6 +91,7 @@ function binaDashboardUtama_(sh) {
     .setOption('width', 700)
     .build());
 
+  sh.setColumnWidth(1, 200);
   sh.hideColumns(26);
   setDefault_(pilih, sh.getRange('Z2'));
 }
@@ -128,6 +129,9 @@ function binaAnalisis_(sh) {
   sh.getRange('J8:J').setNumberFormat('0.00%');
 
   sh.setFrozenRows(7);
+  sh.setColumnWidth(1, 190);
+  sh.setColumnWidth(6, 190);
+  sh.setColumnWidth(7, 170);
   sh.hideColumns(26);
 }
 
@@ -175,6 +179,8 @@ function binaTrend_(sh) {
     .setOption('width', 800)
     .build());
 
+  sh.setColumnWidth(2, 300);
+  sh.setColumnWidth(3, 300);
   sh.hideColumns(25, 2);
   setDefault_(pilih, sh.getRange('Z2'));
 }
