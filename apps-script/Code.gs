@@ -319,6 +319,53 @@ function prosesUpload(tarikhIso, csvText, sahkan) {
 }
 
 /**
+ * Ringkasan pratonton dari hasil parseKehadiran. Tiada panggilan ke Sheet.
+ * Baris yang dibetulkan (contoh "18-Dec") ditanda supaya boleh diserlahkan.
+ */
+function ringkasPratonton_(hasil) {
+  const dibetulkan = {};
+  hasil.pembetulan.forEach(function (p) { dibetulkan[p.tingkatan + '|' + p.kelas] = p.asal; });
+  const rows = hasil.rows.map(function (r) {
+    return {
+      tingkatan: r.tingkatan, kelas: r.kelas, hadir: r.hadir, jumlah: r.jumlah,
+      peratus: r.hadir / r.jumlah,
+      asal: dibetulkan[r.tingkatan + '|' + r.kelas] || null,
+    };
+  });
+  const hadir = rows.reduce(function (s, r) { return s + r.hadir; }, 0);
+  const jumlah = rows.reduce(function (s, r) { return s + r.jumlah; }, 0);
+  return {
+    rows: rows,
+    gagal: hasil.gagal,
+    pembetulan: hasil.pembetulan,
+    ringkasan: { bilKelas: rows.length, hadir: hadir, jumlah: jumlah, peratus: jumlah ? hadir / jumlah : null },
+  };
+}
+
+/**
+ * Semak & pratonton CSV tanpa menyimpan (dipanggil dari App.html, admin sahaja).
+ * Pulang {ralat?, ralatTarikh?, rows, gagal, pembetulan, ringkasan}.
+ */
+function semakUpload(tarikhIso, csvText) {
+  try {
+    semakAkses_(true);
+    if (typeof csvText !== 'string') throw new Error('Kandungan fail tidak diterima.');
+    if (csvText.length > SAIZ_CSV_MAKS) throw new Error('Fail terlalu besar (had 1 MB).');
+    const d = ringkasPratonton_(parseKehadiran(csvText));
+    try {
+      const td = tabData_();
+      semakTarikh_(tarikhIso, td.tz);
+      semakTarikhBaru_(td.sheet, td.tz, tarikhIso);
+    } catch (e) {
+      d.ralatTarikh = String(e && e.message ? e.message : e);
+    }
+    return d;
+  } catch (e) {
+    return { ralat: String(e && e.message ? e.message : e), rows: [], gagal: [], pembetulan: [], ringkasan: null };
+  }
+}
+
+/**
  * URL tanpa parameter -> dashboard (App.html).
  * ?p=upload            -> borang upload (Index.html).
  */
@@ -337,7 +384,6 @@ function doGet(e) {
       .addMetaTag('viewport', 'width=device-width, initial-scale=1');
   }
   const t = HtmlService.createTemplateFromFile('App');
-  t.urlUpload = ScriptApp.getService().getUrl() + '?p=upload';
   t.peranan = a.peranan;
   return t.evaluate()
     .setTitle('SEMARAK HEM - Dashboard Kehadiran')
