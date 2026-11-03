@@ -148,6 +148,44 @@
     .borang .bantu { font-size: 12px; color: var(--teks2); margin-top: 6px; }
     .medan-peratus { display: flex; align-items: center; gap: 8px; max-width: 200px; }
     .medan-peratus span { color: var(--teks2); font-weight: 600; }
+    /* Laporan */
+    .kawalan-laporan { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: flex-end; }
+    .kawalan-laporan label { display: block; font-weight: 600; font-size: 12px; margin-bottom: 6px; color: var(--teks2); }
+    .kawalan-laporan select { padding: 8px 10px; border: 1px solid var(--garis); border-radius: 8px; background: #fff; font: inherit; }
+    .togol { display: inline-flex; border: 1px solid var(--garis); border-radius: 8px; overflow: hidden; }
+    .togol button { border: none; background: #fff; padding: 8px 12px; font-size: 13px; cursor: pointer; color: var(--teks2); }
+    .togol button.aktif { background: var(--utama); color: #fff; }
+    .pentas { overflow-x: auto; padding: 4px 0 24px; }
+    .kertas { background: #fff; width: 210mm; min-height: 297mm; margin: 0 auto; padding: 16mm 15mm; box-shadow: 0 1px 3px rgba(15,23,42,.12), 0 8px 24px rgba(15,23,42,.08); color: #000; font-size: 10.5pt; line-height: 1.4; }
+    .kertas h1 { font-size: 15pt; margin: 0; text-align: center; letter-spacing: .02em; }
+    .kertas .sekolah { text-align: center; font-weight: 700; font-size: 12pt; text-transform: uppercase; }
+    .kertas .meta { text-align: center; margin: 4px 0 14px; font-size: 10pt; }
+    .kertas hr { border: none; border-top: 1.5px solid #000; margin: 8px 0 14px; }
+    .kertas h2 { font-size: 11pt; margin: 16px 0 6px; text-transform: uppercase; }
+    .kertas table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+    .kertas th, .kertas td { border: 1px solid #555; padding: 3px 6px; text-align: left; }
+    .kertas th { background: #eee; font-weight: 700; }
+    .kertas td.n, .kertas th.n { text-align: right; }
+    .kertas tr { break-inside: avoid; }
+    .kotak-ringkas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid #555; }
+    .kotak-ringkas div { padding: 6px 8px; border-right: 1px solid #555; }
+    .kotak-ringkas div:last-child { border-right: none; }
+    .kotak-ringkas small { display: block; font-size: 8.5pt; color: #333; }
+    .kotak-ringkas b { font-size: 13pt; }
+    .ulasan { border: 1px solid #555; min-height: 26mm; padding: 6px 8px; }
+    .tandatangan { display: grid; grid-template-columns: 1fr 1fr; gap: 20mm; margin-top: 18mm; break-inside: avoid; }
+    .tandatangan .garis { border-bottom: 1px dotted #000; height: 14mm; }
+    .tandatangan p { margin: 4px 0; font-size: 10pt; }
+    .kaki { margin-top: 10mm; font-size: 8pt; color: #555; text-align: center; }
+    .amaran-nama { font-size: 12px; color: var(--amaran); margin-top: 6px; }
+    @media print {
+      @page { size: A4; margin: 15mm 15mm 14mm; }
+      body { background: #fff; }
+      .atas, .sisi, .kepala, .tiada-cetak { display: none !important; }
+      .rangka { display: block; min-height: 0; }
+      .utama, .pentas { padding: 0; overflow: visible; }
+      .kertas { box-shadow: none; margin: 0; width: auto; min-height: 0; padding: 0; }
+    }
     .naik { color: var(--utama); } .turun { color: var(--merah); }
     .ringkas { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: var(--teks2); }
     .ringkas b { color: var(--teks); font-size: 15px; }
@@ -202,6 +240,7 @@
         <a data-paparan="utama" class="aktif"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard Utama</span></a>
         <a data-paparan="analisis"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14.8c2 .7 3.2 2.4 3.6 5.2"/></svg><span>Analisis Kelas</span></a>
         <a data-paparan="trend"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span>Trend Kehadiran</span></a>
+        <a data-paparan="laporan"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg><span>Laporan SU HEM</span></a>
 <? if (peranan === 'admin') { ?>
         <h4 class="h4-admin">PENTADBIR (ADMIN)</h4>
         <a data-paparan="import"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.5A3.8 3.8 0 0 1 17.5 18"/><path d="M12 12v8"/><path d="M8.5 15.5 12 12l3.5 3.5"/></svg><span>Import CSV IDME</span></a>
@@ -259,6 +298,7 @@
       analisis: { tajuk: 'Analisis Kelas', label: 'Tempoh', api: 'getAnalisis', papar: (d) => paparAnalisis(d) },
       trend: { tajuk: 'Trend Kehadiran', label: 'Julat', api: 'getTrend', papar: (d) => paparTrend(d) },
       padam: { tajuk: 'Padam Data', label: '', api: 'getSenaraiPadam', papar: (d) => paparPadam(d), tanpaPilihan: true },
+      laporan: { tajuk: 'Laporan SU HEM', label: '', api: 'getLaporan', papar: (d) => paparLaporan(d), tanpaPilihan: true },
       tetapan: { tajuk: 'Tetapan Sistem', label: '', api: 'getTetapan', papar: (d) => paparTetapan(d), tanpaPilihan: true },
       sejarah: { tajuk: 'Sejarah Import', label: '', api: 'getSejarah', papar: (d) => paparSejarah(d), tanpaPilihan: true },
       import: { tajuk: 'Import CSV IDME', label: '', api: null, papar: () => paparImport(), tanpaPilihan: true, tanpaKepala: true },
@@ -266,7 +306,7 @@
     let notisPadam = null;
     const pilihan = { utama: null, analisis: 'semua', trend: '30' };
     let pilihTrend = '';
-    const hujah = (p) => (p === 'trend' ? [pilihan.trend, pilihTrend] : (p === 'padam' || p === 'sejarah' || p === 'tetapan') ? [] : [pilihan[p]]);
+    const hujah = (p) => (p === 'trend' ? [pilihan.trend, pilihTrend] : p === 'laporan' ? [lap.dari, lap.hingga] : (p === 'padam' || p === 'sejarah' || p === 'tetapan') ? [] : [pilihan[p]]);
     let paparan = 'utama';
 
     function tukarPaparan(p) {
@@ -630,6 +670,110 @@
       const blob = new Blob(['﻿' + baris.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
       const a = el('a', { href: URL.createObjectURL(blob), download: 'template_kehadiran_idme.csv' });
       document.body.append(a); a.click(); a.remove();
+    }
+
+    /* ---------------- Laporan SU HEM ---------------- */
+    const lap = { jenis: 'harian', dari: null, hingga: null };
+
+    function paparLaporan(d) {
+      $('subtajuk').textContent = 'Laporan A4 untuk dicetak atau disimpan sebagai PDF.';
+      if (!d.tarikhSemua.length) {
+        $('kandungan').replaceChildren(el('div', { class: 'kad kosong' }, 'Belum ada data untuk dilaporkan.'));
+        return;
+      }
+      lap.dari = d.dari; lap.hingga = d.hingga;
+      if (d.dari !== d.hingga) lap.jenis = 'julat';
+
+      // Kawalan
+      const togol = el('div', { class: 'togol' }, [['harian', 'Satu tarikh'], ['julat', 'Julat tarikh']].map(([k, t]) => {
+        const b = el('button', { type: 'button', class: lap.jenis === k ? 'aktif' : '' }, t);
+        b.addEventListener('click', () => {
+          if (lap.jenis === k) return;
+          lap.jenis = k;
+          if (k === 'harian') lap.dari = lap.hingga;
+          else { const naik = d.tarikhSemua.slice().reverse(); lap.dari = naik[Math.max(0, naik.indexOf(lap.hingga) - 4)]; }
+          muat();
+        });
+        return b;
+      }));
+      const pilihTarikh = (id, nilai, ubah) => {
+        const sel = el('select', { id }, d.tarikhSemua.map((iso) => el('option', { value: iso }, tarikhPanjang(iso))));
+        sel.value = nilai;
+        sel.addEventListener('change', () => { ubah(sel.value); muat(); });
+        return sel;
+      };
+      const medan = [el('div', {}, el('label', {}, 'Jenis laporan'), togol)];
+      if (lap.jenis === 'harian') {
+        medan.push(el('div', {}, el('label', { for: 'lapTarikh' }, 'Tarikh'), pilihTarikh('lapTarikh', lap.hingga, (v) => { lap.dari = lap.hingga = v; })));
+      } else {
+        medan.push(el('div', {}, el('label', { for: 'lapDari' }, 'Dari'), pilihTarikh('lapDari', lap.dari, (v) => { lap.dari = v; })));
+        medan.push(el('div', {}, el('label', { for: 'lapHingga' }, 'Hingga'), pilihTarikh('lapHingga', lap.hingga, (v) => { lap.hingga = v; })));
+      }
+      const cetak = el('button', { class: 'butang-utama', type: 'button' }, ikon('muatTurun'), 'Cetak / Simpan PDF');
+      cetak.addEventListener('click', () => window.print());
+      medan.push(el('div', { style: 'margin-left:auto' }, cetak));
+      const kawalan = el('section', { class: 'kad seksyen tiada-cetak' }, el('div', { class: 'kawalan-laporan' }, medan),
+        d.namaSekolah ? null : el('div', { class: 'amaran-nama' }, 'Nama sekolah belum ditetapkan. Admin boleh isi di Tetapan Sistem.'),
+        el('div', { class: 'bantu', style: 'font-size:12px;color:var(--teks2);margin-top:8px' },
+          'Dalam tetingkap cetak, pilih "Save as PDF" untuk simpan sebagai PDF. Pastikan saiz kertas A4.'));
+
+      $('kandungan').replaceChildren(kawalan, el('div', { class: 'pentas' }, kertasLaporan(d)));
+    }
+
+    function kertasLaporan(d) {
+      const r = d.ringkasan, kpi = d.kpi;
+      const satuHari = d.dari === d.hingga;
+      const tempoh = satuHari ? 'Tarikh: ' + tarikhPanjang(d.dari)
+        : 'Tempoh: ' + tarikhPanjang(d.dari) + ' hingga ' + tarikhPanjang(d.hingga) + ' (' + r.bilHari + ' hari data)';
+      const kini = new Date(), p2 = (n) => String(n).padStart(2, '0');
+      const dijana = p2(kini.getDate()) + '/' + p2(kini.getMonth() + 1) + '/' + kini.getFullYear() + ' ' + p2(kini.getHours()) + ':' + p2(kini.getMinutes());
+
+      const kotak = (label, nilai) => el('div', {}, el('small', {}, label), el('b', {}, nilai));
+      const ringkas = el('div', { class: 'kotak-ringkas' },
+        kotak('Peratus kehadiran', pct(r.peratus, 2)),
+        kotak(satuHari ? 'Hadir / Enrolmen' : 'Jumlah hadir / dijangka', r.hadir + ' / ' + r.jumlah),
+        kotak('Kelas capai KPI (' + pctK(kpi) + ')', r.kelasCapai + ' / ' + r.bilKelas),
+        satuHari ? kotak('Murid tidak hadir', r.tidakHadir) : kotak('Hari capai KPI', r.hariCapai + ' / ' + r.bilHari));
+
+      const jT = el('table', {},
+        el('thead', {}, el('tr', {}, el('th', {}, 'Tingkatan'), el('th', { class: 'n' }, 'Kelas'), el('th', { class: 'n' }, 'Hadir'),
+          el('th', { class: 'n' }, 'Jumlah'), el('th', { class: 'n' }, 'Peratus'), el('th', { class: 'n' }, 'Kelas < KPI'))),
+        el('tbody', {}, d.tingkatan.map((t) => el('tr', {},
+          el('td', {}, tajukKelas(t.nama)), el('td', { class: 'n' }, t.bilKelas), el('td', { class: 'n' }, t.hadir),
+          el('td', { class: 'n' }, t.jumlah), el('td', { class: 'n' }, pct(t.peratus, 2)), el('td', { class: 'n' }, t.bilBawah))),
+          el('tr', {}, el('th', {}, 'Jumlah'), el('th', { class: 'n' }, r.bilKelas), el('th', { class: 'n' }, r.hadir),
+            el('th', { class: 'n' }, r.jumlah), el('th', { class: 'n' }, pct(r.peratus, 2)), el('th', { class: 'n' }, r.bilKelas - r.kelasCapai))));
+
+      const jB = d.bawahKpi.length
+        ? el('table', {},
+          el('thead', {}, el('tr', {}, el('th', { class: 'n' }, 'Bil.'), el('th', {}, 'Tingkatan'), el('th', {}, 'Kelas'),
+            el('th', { class: 'n' }, 'Hadir / Jumlah'), el('th', { class: 'n' }, 'Peratus'))),
+          el('tbody', {}, d.bawahKpi.map((k, i) => el('tr', {},
+            el('td', { class: 'n' }, i + 1), el('td', {}, tajukKelas(k.tingkatan)), el('td', {}, tajukKelas(k.kelas)),
+            el('td', { class: 'n' }, k.hadir + ' / ' + k.jumlah), el('td', { class: 'n' }, pct(k.peratus, 2))))))
+        : el('p', {}, 'Semua kelas mencapai sasaran KPI.');
+
+      const jH = !satuHari ? [el('h2', {}, 'D. Kehadiran harian'), el('table', {},
+        el('thead', {}, el('tr', {}, el('th', {}, 'Tarikh'), el('th', { class: 'n' }, 'Hadir / Jumlah'), el('th', { class: 'n' }, 'Peratus'), el('th', {}, 'Status'))),
+        el('tbody', {}, d.harian.map((h) => el('tr', {}, el('td', {}, tarikhPanjang(h.iso)),
+          el('td', { class: 'n' }, h.hadir + ' / ' + h.jumlah), el('td', { class: 'n' }, pct(h.peratus, 2)),
+          el('td', {}, h.peratus >= kpi ? 'Capai' : 'Bawah sasaran')))))] : [];
+
+      const ttd = (peranan) => el('div', {}, el('p', {}, peranan), el('div', { class: 'garis' }),
+        el('p', {}, 'Nama: '), el('p', {}, 'Jawatan: '), el('p', {}, 'Tarikh: '));
+
+      return el('div', { class: 'kertas' },
+        d.namaSekolah ? el('div', { class: 'sekolah' }, d.namaSekolah) : null,
+        el('h1', {}, 'LAPORAN KEHADIRAN MURID'),
+        el('div', { class: 'meta' }, tempoh, el('br'), 'Sasaran KPI kehadiran: ' + pctK(kpi)),
+        el('hr'),
+        el('h2', {}, 'A. Ringkasan'), ringkas,
+        el('h2', {}, 'B. Kehadiran mengikut tingkatan'), jT,
+        el('h2', {}, 'C. Kelas di bawah sasaran KPI (' + d.bawahKpi.length + ' kelas)'), jB,
+        ...jH,
+        el('h2', {}, (satuHari ? 'D' : 'E') + '. Ulasan'), el('div', { class: 'ulasan' }),
+        el('div', { class: 'tandatangan' }, ttd('Disediakan oleh:'), ttd('Disemak oleh:')),
+        el('div', { class: 'kaki' }, 'Dijana oleh sistem SEMARAK HEM pada ' + dijana + '. Sumber data: IDME MOEIS.'));
     }
 
     /* ---------------- Tetapan Sistem (admin) ---------------- */

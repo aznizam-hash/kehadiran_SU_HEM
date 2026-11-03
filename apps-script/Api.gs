@@ -274,3 +274,63 @@ function getTrend(julat, pilih) {
   d.namaSekolah = t.namaSekolah;
   return d;
 }
+
+/**
+ * Laporan untuk julat tarikh [dari, hingga] (yyyy-mm-dd, termasuk kedua-dua hujung).
+ * Satu tarikh: dari = hingga. Tiada panggilan ke Sheet.
+ */
+function ringkasLaporan_(rows, dari, hingga, kpi) {
+  const tarikhSemua = senaraiTarikh_(rows);
+  let d = dari || tarikhSemua[0] || '';
+  let h = hingga || d;
+  if (d > h) { const x = d; d = h; h = x; }
+  const dipilih = rows.filter(function (r) { return r.iso >= d && r.iso <= h; });
+  const kelas = kumpulKelas_(dipilih);
+  const tingkatan = kumpulTingkatan_(kelas, kpi);
+  const hadir = kelas.reduce(function (s, k) { return s + k.hadir; }, 0);
+  const jumlah = kelas.reduce(function (s, k) { return s + k.jumlah; }, 0);
+
+  const ikutHari = {};
+  dipilih.forEach(function (r) {
+    if (!(r.jumlah > 0)) return;
+    const t = ikutHari[r.iso] || (ikutHari[r.iso] = { iso: r.iso, hadir: 0, jumlah: 0 });
+    t.hadir += r.hadir; t.jumlah += r.jumlah;
+  });
+  const harian = Object.keys(ikutHari).sort().map(function (k) {
+    const t = ikutHari[k]; t.peratus = t.hadir / t.jumlah; return t;
+  });
+
+  return {
+    kpi: kpi,
+    tarikhSemua: tarikhSemua,
+    kemaskini: tarikhSemua[0] || null,
+    dari: d,
+    hingga: h,
+    ringkasan: {
+      bilHari: harian.length,
+      hadir: hadir,
+      jumlah: jumlah,
+      tidakHadir: jumlah - hadir,
+      peratus: jumlah ? hadir / jumlah : null,
+      bilKelas: kelas.length,
+      kelasCapai: kelas.filter(function (k) { return k.peratus >= kpi; }).length,
+      hariCapai: harian.filter(function (t) { return t.peratus >= kpi; }).length,
+    },
+    tingkatan: tingkatan,
+    bawahKpi: kelas.filter(function (k) { return k.peratus < kpi; })
+      .sort(function (a, b) { return a.peratus - b.peratus; }),
+    harian: harian,
+  };
+}
+
+/** Dipanggil dari App.html. Semua pengguna yang ada akses boleh jana laporan. */
+function getLaporan(dari, hingga) {
+  const a = semakAkses_(false);
+  const td = tabData_();
+  const t = bacaTetapan_();
+  const d = ringkasLaporan_(bacaData_(td), dari, hingga, t.kpi);
+  d.email = a.emel;
+  d.peranan = a.peranan;
+  d.namaSekolah = t.namaSekolah;
+  return d;
+}
