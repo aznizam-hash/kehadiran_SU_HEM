@@ -3,7 +3,7 @@
  * Semua fungsi pulang objek ringkas (tiada Date) untuk google.script.run.
  */
 
-const SASARAN_KPI = 0.95;
+// Sasaran KPI kini dibaca dari tab Tetapan (lihat Tetapan.gs, bacaTetapan_).
 
 const NOMBOR_TINGKATAN_ = { SATU: '1', DUA: '2', TIGA: '3', EMPAT: '4', LIMA: '5', ENAM: '6' };
 
@@ -130,9 +130,11 @@ function ringkasDashboard_(rows, tarikhIso, kpi) {
 function getDashboard(tarikhIso) {
   const a = semakAkses_(false);
   const td = tabData_();
-  const d = ringkasDashboard_(bacaData_(td), tarikhIso, SASARAN_KPI);
+  const t = bacaTetapan_();
+  const d = ringkasDashboard_(bacaData_(td), tarikhIso, t.kpi);
   d.email = a.emel;
   d.peranan = a.peranan;
+  d.namaSekolah = t.namaSekolah;
   return d;
 }
 
@@ -173,9 +175,11 @@ function ringkasAnalisis_(rows, tempoh, kpi) {
 function getAnalisis(tempoh) {
   const a = semakAkses_(false);
   const td = tabData_();
-  const d = ringkasAnalisis_(bacaData_(td), tempoh, SASARAN_KPI);
+  const t = bacaTetapan_();
+  const d = ringkasAnalisis_(bacaData_(td), tempoh, t.kpi);
   d.email = a.emel;
   d.peranan = a.peranan;
+  d.namaSekolah = t.namaSekolah;
   return d;
 }
 
@@ -263,8 +267,10 @@ function ringkasTrend_(rows, julat, pilih, kpi) {
 function getTrend(julat, pilih) {
   const a = semakAkses_(false);
   const td = tabData_();
-  const d = ringkasTrend_(bacaData_(td), julat, pilih, SASARAN_KPI);
+  const t = bacaTetapan_();
+  const d = ringkasTrend_(bacaData_(td), julat, pilih, t.kpi);
   d.email = a.emel;
   d.peranan = a.peranan;
+  d.namaSekolah = t.namaSekolah;
   return d;
 }
