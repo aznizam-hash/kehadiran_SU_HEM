@@ -141,6 +141,13 @@
     .tindakan { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
     .tindakan.import { background: var(--utama-lembut); color: var(--utama); }
     .tindakan.padam { background: var(--merah-lembut); color: var(--merah); }
+    .tindakan.tetapan { background: #ede9fe; color: #6d28d9; }
+    .borang { display: grid; gap: 18px; max-width: 520px; }
+    .borang label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+    .borang input { width: 100%; padding: 10px 12px; border: 1px solid var(--garis); border-radius: 10px; background: #f8fafc; font: inherit; }
+    .borang .bantu { font-size: 12px; color: var(--teks2); margin-top: 6px; }
+    .medan-peratus { display: flex; align-items: center; gap: 8px; max-width: 200px; }
+    .medan-peratus span { color: var(--teks2); font-weight: 600; }
     .naik { color: var(--utama); } .turun { color: var(--merah); }
     .ringkas { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: var(--teks2); }
     .ringkas b { color: var(--teks); font-size: 15px; }
@@ -177,7 +184,7 @@
       <div class="logo">S</div>
       <div>
         <h1>SEMARAK HEM</h1>
-        <p>Sistem Analisis Kehadiran Murid</p>
+        <p>Sistem Analisis Kehadiran Murid<span id="namaSekolah"></span></p>
       </div>
     </div>
     <div class="pengguna"><span id="email">-</span><br><span class="lencana-peranan"><?= peranan === 'admin' ? 'ADMIN (SU HEM)' : 'PAPARAN SAHAJA' ?></span><small>Data terkini: <span id="kemaskini">-</span></small></div>
@@ -200,6 +207,7 @@
         <a data-paparan="import"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.5A3.8 3.8 0 0 1 17.5 18"/><path d="M12 12v8"/><path d="M8.5 15.5 12 12l3.5 3.5"/></svg><span>Import CSV IDME</span></a>
         <a data-paparan="sejarah"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><span>Sejarah Import</span></a>
         <a data-paparan="padam"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg><span>Padam Data</span></a>
+        <a data-paparan="tetapan"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Tetapan Sistem</span></a>
 <? } ?>
       </div>
     </nav>
@@ -225,6 +233,7 @@
   <script>
     const $ = (id) => document.getElementById(id);
     const pct = (x, dp = 1) => (x == null ? '-' : (100 * x).toFixed(dp) + '%');
+    const pctK = (k) => +(100 * k).toFixed(2) + '%';   // sasaran KPI: 95% atau 92.5%
     const tarikhMs = (iso) => iso ? iso.split('-').reverse().join('/') : '-';
     const BULAN = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'];
     const tarikhPanjang = (iso) => { const [y, m, d] = iso.split('-'); return +d + ' ' + BULAN[+m - 1] + ' ' + y; };
@@ -250,13 +259,14 @@
       analisis: { tajuk: 'Analisis Kelas', label: 'Tempoh', api: 'getAnalisis', papar: (d) => paparAnalisis(d) },
       trend: { tajuk: 'Trend Kehadiran', label: 'Julat', api: 'getTrend', papar: (d) => paparTrend(d) },
       padam: { tajuk: 'Padam Data', label: '', api: 'getSenaraiPadam', papar: (d) => paparPadam(d), tanpaPilihan: true },
+      tetapan: { tajuk: 'Tetapan Sistem', label: '', api: 'getTetapan', papar: (d) => paparTetapan(d), tanpaPilihan: true },
       sejarah: { tajuk: 'Sejarah Import', label: '', api: 'getSejarah', papar: (d) => paparSejarah(d), tanpaPilihan: true },
       import: { tajuk: 'Import CSV IDME', label: '', api: null, papar: () => paparImport(), tanpaPilihan: true, tanpaKepala: true },
     };
     let notisPadam = null;
     const pilihan = { utama: null, analisis: 'semua', trend: '30' };
     let pilihTrend = '';
-    const hujah = (p) => (p === 'trend' ? [pilihan.trend, pilihTrend] : (p === 'padam' || p === 'sejarah') ? [] : [pilihan[p]]);
+    const hujah = (p) => (p === 'trend' ? [pilihan.trend, pilihTrend] : (p === 'padam' || p === 'sejarah' || p === 'tetapan') ? [] : [pilihan[p]]);
     let paparan = 'utama';
 
     function tukarPaparan(p) {
@@ -304,6 +314,7 @@
 
     // Bahagian yang sama untuk semua paparan: header, status, dropdown.
     function kongsi(d) {
+      if ('namaSekolah' in d) $('namaSekolah').textContent = d.namaSekolah ? ' • ' + d.namaSekolah : '';
       $('email').textContent = d.email || '-';
       $('kemaskini').textContent = d.kemaskini ? tarikhPanjang(d.kemaskini) : '-';
       $('bilTarikh').textContent = d.tarikhSemua.length + ' hari data';
@@ -321,7 +332,7 @@
     }
 
     function papar(d) {
-      $('subtajuk').textContent = 'Ringkasan kehadiran harian mengikut sasaran KPI ' + pct(d.kpi, 0);
+      $('subtajuk').textContent = 'Ringkasan kehadiran harian mengikut sasaran KPI ' + pctK(d.kpi);
       if (!d.tarikh) {
         $('kandungan').replaceChildren(el('div', { class: 'kad kosong' }, 'Belum ada data. Upload CSV melalui menu Import CSV IDME.'));
         return;
@@ -332,7 +343,7 @@
       const kpi = el('section', { class: 'kpi' },
         kadKpi('Peratus kehadiran',
           [pct(r.peratus, 2), el('span', { class: 'lencana ' + (capaiSekolah ? 'ok' : 'bawah') }, capaiSekolah ? 'Capai sasaran' : 'Bawah sasaran')],
-          ['Sasaran sekolah: ', el('b', {}, pct(d.kpi, 1))]),
+          ['Sasaran sekolah: ', el('b', {}, pctK(d.kpi))]),
         kadKpi('Murid hadir / enrolmen',
           [r.hadir + ' / ' + r.jumlah],
           ['Tidak hadir: ', el('b', { class: 'merah' }, r.tidakHadir), ' orang']),
@@ -350,7 +361,7 @@
         el('div', { class: 'legenda' },
           el('span', {}, el('i', { style: 'background:var(--utama)' }), 'Capai sasaran'),
           el('span', {}, el('i', { style: 'background:var(--amaran-bar)' }), 'Bawah sasaran'),
-          el('span', {}, el('i', { style: 'background:var(--merah);height:2px' }), 'Sasaran ' + pct(d.kpi, 0))),
+          el('span', {}, el('i', { style: 'background:var(--merah);height:2px' }), 'Sasaran ' + pctK(d.kpi))),
         cartaBar(d.tingkatan, d.kpi));
 
       const senarai = d.perhatian.length
@@ -363,7 +374,7 @@
       const perhatian = el('section', { class: 'kad' },
         el('div', { class: 'kepala-kecil' },
           el('h3', {}, 'Kelas perlu perhatian'),
-          el('span', { class: 'lencana bawah' }, d.perhatian.length + ' kelas < ' + pct(d.kpi, 0))),
+          el('span', { class: 'lencana bawah' }, d.perhatian.length + ' kelas < ' + pctK(d.kpi))),
         el('p', { class: 'sub' }, 'Disusun dari peratus kehadiran paling rendah'),
         senarai);
 
@@ -424,7 +435,7 @@
 
       const kadT = el('section', { class: 'kad seksyen' },
         el('h3', {}, 'Purata per tingkatan'),
-        el('p', { class: 'sub' }, 'Garis merah pada bar = sasaran ' + pct(d.kpi, 0)),
+        el('p', { class: 'sub' }, 'Garis merah pada bar = sasaran ' + pctK(d.kpi)),
         el('div', { class: 'bungkus' }, jT));
 
       const kadK = el('section', { class: 'kad seksyen' });
@@ -621,12 +632,43 @@
       document.body.append(a); a.click(); a.remove();
     }
 
+    /* ---------------- Tetapan Sistem (admin) ---------------- */
+    let notisTetapan = null;
+
+    function paparTetapan(d) {
+      $('subtajuk').textContent = 'Perubahan berkuat kuasa serta-merta untuk semua pengguna dan direkod dalam Sejarah Import.';
+      const t = d.tetapan, had = d.had;
+      const nama = el('input', { type: 'text', id: 'tetNama', maxlength: String(had.namaMaks), placeholder: 'Contoh: SMK Mengkarak' });
+      nama.value = t.namaSekolah;
+      const kpi = el('input', { type: 'number', id: 'tetKpi', min: String(had.kpiMin), max: String(had.kpiMaks), step: '0.5', inputmode: 'decimal' });
+      kpi.value = String(+(t.kpi * 100).toFixed(2));
+      const simpan = el('button', { class: 'butang-utama', type: 'button' }, ikon('simpan'), 'Simpan Tetapan');
+      const bahagian = [];
+      if (notisTetapan) bahagian.push(el('div', { class: 'notis ' + (notisTetapan.ok ? 'ok' : 'ralat') }, notisTetapan.mesej));
+      notisTetapan = null;
+      bahagian.push(el('section', { class: 'kad seksyen' },
+        el('div', { class: 'borang' },
+          el('div', {}, el('label', { for: 'tetNama' }, 'Nama sekolah'), nama,
+            el('div', { class: 'bantu' }, 'Dipaparkan di header web app. Biarkan kosong jika tidak perlu.')),
+          el('div', {}, el('label', { for: 'tetKpi' }, 'Sasaran KPI kehadiran'),
+            el('div', { class: 'medan-peratus' }, kpi, el('span', {}, '%')),
+            el('div', { class: 'bantu' }, `Antara ${had.kpiMin}% dan ${had.kpiMaks}%. Digunakan untuk warna hijau/kuning, garis sasaran pada carta, dan senarai kelas perlu perhatian.`)),
+          el('div', {}, simpan))));
+      simpan.addEventListener('click', () => {
+        simpan.disabled = true; simpan.lastChild.textContent = 'Menyimpan...';
+        panggil('simpanTetapan', [{ kpiPeratus: kpi.value, namaSekolah: nama.value }],
+          (h) => { notisTetapan = h; muat(); },
+          (e) => { notisTetapan = { ok: false, mesej: 'Ralat: ' + teksRalat(e) }; muat(); });
+      });
+      $('kandungan').replaceChildren(...bahagian);
+    }
+
     /* ---------------- Sejarah Import (admin) ---------------- */
     let tapisSejarah = 'semua';
     const masaPaparan = (m) => { if (!/^\d{4}-\d{2}-\d{2} /.test(m)) return m; const [t, j] = m.split(' '); return tarikhPanjang(t) + ', ' + j; };
 
     function paparSejarah(d) {
-      $('subtajuk').textContent = 'Rekod setiap import dan padam data. Upload yang ditolak tidak direkod.';
+      $('subtajuk').textContent = 'Rekod setiap import, padam data dan perubahan tetapan. Upload yang ditolak tidak direkod.';
       if (!d.rekod.length) {
         $('kandungan').replaceChildren(el('div', { class: 'kad kosong' },
           'Belum ada rekod. Rekod bermula dari import atau padam yang pertama selepas fungsi ini dipasang.'));
@@ -635,7 +677,7 @@
       const kad = el('section', { class: 'kad seksyen' });
       const lukis = () => {
         const senarai = d.rekod.filter((r) => tapisSejarah === 'semua' || r.tindakan.toLowerCase() === tapisSejarah);
-        const cip = el('div', { class: 'cip' }, [['semua', 'Semua'], ['import', 'Import'], ['padam', 'Padam']].map(([k, t]) => {
+        const cip = el('div', { class: 'cip' }, [['semua', 'Semua'], ['import', 'Import'], ['padam', 'Padam'], ['tetapan', 'Tetapan']].map(([k, t]) => {
           const n = k === 'semua' ? d.rekod.length : d.rekod.filter((r) => r.tindakan.toLowerCase() === k).length;
           const b = el('button', { class: k === tapisSejarah ? 'aktif' : '', type: 'button' }, t + ' (' + n + ')');
           b.addEventListener('click', () => { tapisSejarah = k; lukis(); });
@@ -645,9 +687,9 @@
           el('td', {}, masaPaparan(r.masa), el('span', { class: 'kecil-sahaja' }, r.pengguna)),
           el('td', { class: 'sk' }, r.pengguna),
           el('td', {}, el('span', { class: 'tindakan ' + r.tindakan.toLowerCase() }, r.tindakan)),
-          el('td', {}, el('b', {}, r.tarikh), el('span', { class: 'kecil-sahaja' }, r.bilKelas + ' kelas, ' + r.hadir + '/' + r.jumlah)),
-          el('td', { class: 'n sk' }, r.bilKelas),
-          el('td', { class: 'n sk' }, r.hadir + ' / ' + r.jumlah),
+          el('td', {}, el('b', {}, r.tarikh || '–'), r.tarikh ? el('span', { class: 'kecil-sahaja' }, r.bilKelas + ' kelas, ' + r.hadir + '/' + r.jumlah) : el('span', { class: 'kecil-sahaja' }, r.catatan)),
+          el('td', { class: 'n sk' }, r.tarikh ? r.bilKelas : '–'),
+          el('td', { class: 'n sk' }, r.tarikh ? r.hadir + ' / ' + r.jumlah : '–'),
           el('td', { class: 'n sk' }, r.dibetulkan == null ? '–' : r.dibetulkan),
           el('td', { class: 'sk', style: 'white-space:normal;color:var(--teks2)' }, r.catatan))));
         kad.replaceChildren(
@@ -767,7 +809,7 @@
         el('div', { class: 'legenda' },
           el('span', {}, el('i', { style: 'background:' + WARNA_SEKOLAH }), 'Sekolah'),
           d.pilih ? el('span', {}, el('i', { style: 'background:' + WARNA_PILIHAN }), d.labelPilihan) : null,
-          el('span', {}, el('i', { style: 'background:var(--merah);height:2px' }), 'Sasaran ' + pct(d.kpi, 0))),
+          el('span', {}, el('i', { style: 'background:var(--merah);height:2px' }), 'Sasaran ' + pctK(d.kpi))),
         r.bilHari === 1 ? el('p', { class: 'sub' }, 'Baru ada data untuk satu hari. Garisan trend akan terbentuk selepas data beberapa hari diupload.') : null,
         cartaGaris(d));
 
