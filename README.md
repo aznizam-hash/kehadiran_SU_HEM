@@ -40,7 +40,7 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 - Jika satu baris CSV gagal, seluruh upload dibatalkan dan baris bermasalah dipaparkan.
 - Jika fail pernah dibuka dalam Excel, nilai seperti `12/18` jadi `18-Dec`. Sistem baca semula sebagai hadir 12 / jumlah 18 (bulan = hadir, hari = jumlah), paparkan senarai pembetulan, dan hanya simpan selepas pengguna tekan **Sahkan & Simpan**.
 - Tarikh akan datang ditolak.
-- Data tersalah tarikh dipadam melalui menu **Kehadiran > Padam data satu tarikh**. Jangan padam seluruh baris secara manual (formula peratus di F2 akan hilang).
+- Data tersalah tarikh dipadam melalui web app (**Pentadbir > Padam Data**, admin sahaja, perlu taip tarikh untuk sahkan) atau menu Sheet **Kehadiran > Padam data satu tarikh**. Jangan padam seluruh baris secara manual (formula peratus di F2 akan hilang).
 - Kelas dikenal pasti dengan gabungan Tingkatan + Kelas.
 - Peratus dalam Analisis dan Trend ialah purata berwajaran (jumlah hadir / jumlah murid), bukan purata peratus kelas.
 
@@ -48,7 +48,7 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 
 - Pemilik script (akaun yang deploy) sentiasa **admin**.
 - Pengguna lain disenaraikan dalam tab **Pengguna** (jalankan `setupPengguna` sekali): lajur A emel, lajur B peranan.
-  - `admin`: semua menu termasuk Import CSV.
+  - `admin`: semua menu termasuk Import CSV dan Padam Data.
   - `lihat`: Dashboard, Analisis, Trend sahaja.
 - Orang yang tiada dalam senarai nampak halaman "Akses ditolak".
 - Deploy: **Execute as: Me**, **Who has access: Anyone within moe-dl.edu.my**. Jangan kongsi fail Sheet kepada pengguna `lihat`; mereka tak perlukannya.
