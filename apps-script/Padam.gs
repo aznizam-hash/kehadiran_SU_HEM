@@ -119,6 +119,7 @@ function padamDataWeb(iso, sahTeks) {
       const cari = cariBarisTarikh_(td, iso);
       if (!cari.baris.length) throw new Error('Tiada data untuk ' + paparan + '. Tiada apa dipadam.');
       padamBaris_(td.sheet, cari.baris);
+      tulisLog_({ tindakan: 'Padam', iso: iso, bilKelas: cari.baris.length, hadir: cari.hadir, jumlah: cari.jumlah, catatan: 'Melalui web app' });
       Logger.log('Padam (web) ' + cari.baris.length + ' baris untuk ' + iso + ' oleh ' + a.emel);
       return { ok: true, mesej: cari.baris.length + ' kelas untuk ' + paparan + ' telah dipadam (' +
         cari.hadir + '/' + cari.jumlah + ' murid). Anda boleh upload semula tarikh yang betul.' };
@@ -160,6 +161,7 @@ function padamTarikh() {
     if (sah !== ui.Button.YES) { ui.alert('Dibatalkan. Tiada apa dipadam.'); return; }
 
     padamBaris_(sheet, baris);
+    tulisLog_({ tindakan: 'Padam', iso: iso, bilKelas: baris.length, hadir: hadir, jumlah: jumlah, catatan: 'Melalui menu Sheet' });
     Logger.log('Padam ' + baris.length + ' baris untuk ' + iso + ' oleh ' + Session.getActiveUser().getEmail());
     ui.alert(baris.length + ' baris untuk ' + paparan + ' telah dipadam. Anda boleh upload semula tarikh yang betul.');
   } finally {
