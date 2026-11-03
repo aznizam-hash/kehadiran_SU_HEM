@@ -109,6 +109,35 @@
     .notis.info { background: var(--amaran-lembut); color: #92400e; }
     .sahkan { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
     .sahkan input { padding: 6px 10px; border: 1px solid var(--garis); border-radius: 8px; width: 120px; font: inherit; }
+    /* Import CSV */
+    .imp-kepala { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--garis); margin-bottom: 18px; }
+    .imp-tajuk { display: flex; gap: 14px; align-items: center; }
+    .imp-ikon { width: 48px; height: 48px; border-radius: 12px; background: #f0fdfa; color: var(--utama); display: grid; place-items: center; flex: none; }
+    .imp-ikon .ikon { width: 24px; height: 24px; }
+    .imp-tajuk h2 { margin: 0; font-size: 20px; }
+    .imp-tajuk p { margin: 4px 0 0; color: var(--teks2); font-size: 13px; }
+    .butang-hijau-lembut { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #99f6e4; background: #f0fdfa; color: var(--utama); border-radius: 10px; padding: 9px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
+    .butang-hijau-lembut:hover { background: var(--utama-lembut); }
+    .butang-utama { display: inline-flex; align-items: center; gap: 8px; border: none; background: var(--utama); color: #fff; border-radius: 10px; padding: 11px 18px; font-weight: 600; font-size: 14px; cursor: pointer; }
+    .butang-utama:hover { background: #115e59; }
+    .butang-utama:disabled { opacity: .5; cursor: default; }
+    .butang-utama .ikon, .butang-hijau-lembut .ikon { width: 16px; height: 16px; }
+    .imp-medan { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 18px; }
+    .imp-medan label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+    .imp-medan input[type=date] { width: 100%; padding: 10px 12px; border: 1px solid var(--garis); border-radius: 10px; background: #f8fafc; font: inherit; }
+    .pilih-fail { display: flex; align-items: center; gap: 12px; padding: 6px; min-height: 44px; box-sizing: border-box; border: 1px solid var(--garis); border-radius: 10px; background: #f8fafc; cursor: pointer; min-width: 0; }
+    .imp-medan label.pilih-fail { display: flex; margin-bottom: 0; font-weight: 400; }
+    .pilih-fail span.btn { background: var(--utama); color: #fff; font-weight: 600; font-size: 13px; padding: 6px 14px; border-radius: 8px; flex: none; }
+    .pilih-fail span.nama { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--teks); }
+    .pilih-fail input { display: none; }
+    .info-format { display: flex; gap: 12px; background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; font-size: 13px; color: #92400e; }
+    .info-format .ikon { width: 20px; height: 20px; flex: none; color: #d97706; }
+    .info-format b { display: block; margin-bottom: 4px; }
+    .info-format code { background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; padding: 1px 6px; font-size: 12px; color: #78350f; }
+    tr.dibetulkan td { background: #fffbeb; }
+    .tag-betul { font-size: 11px; background: var(--amaran-lembut); color: var(--amaran); border-radius: 4px; padding: 1px 6px; margin-left: 6px; white-space: nowrap; }
+    .baris-butang { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    @media (max-width: 760px) { .imp-medan { grid-template-columns: 1fr; } }
     .naik { color: var(--utama); } .turun { color: var(--merah); }
     .ringkas { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: var(--teks2); }
     .ringkas b { color: var(--teks); font-size: 15px; }
@@ -163,7 +192,7 @@
         <a data-paparan="trend"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span>Trend Kehadiran</span></a>
 <? if (peranan === 'admin') { ?>
         <h4 class="h4-admin">PENTADBIR (ADMIN)</h4>
-        <a href="<?= urlUpload ?>"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.5A3.8 3.8 0 0 1 17.5 18"/><path d="M12 12v8"/><path d="M8.5 15.5 12 12l3.5 3.5"/></svg><span>Import CSV IDME</span></a>
+        <a data-paparan="import"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.5A3.8 3.8 0 0 1 17.5 18"/><path d="M12 12v8"/><path d="M8.5 15.5 12 12l3.5 3.5"/></svg><span>Import CSV IDME</span></a>
         <a data-paparan="padam"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg><span>Padam Data</span></a>
 <? } ?>
       </div>
@@ -215,6 +244,7 @@
       analisis: { tajuk: 'Analisis Kelas', label: 'Tempoh', api: 'getAnalisis', papar: (d) => paparAnalisis(d) },
       trend: { tajuk: 'Trend Kehadiran', label: 'Julat', api: 'getTrend', papar: (d) => paparTrend(d) },
       padam: { tajuk: 'Padam Data', label: '', api: 'getSenaraiPadam', papar: (d) => paparPadam(d), tanpaPilihan: true },
+      import: { tajuk: 'Import CSV IDME', label: '', api: null, papar: () => paparImport(), tanpaPilihan: true, tanpaKepala: true },
     };
     let notisPadam = null;
     const pilihan = { utama: null, analisis: 'semua', trend: '30' };
@@ -228,24 +258,41 @@
       $('tajuk').textContent = PAPARAN[p].tajuk;
       $('labelTarikh').textContent = PAPARAN[p].label;
       document.querySelector('.pilih-tarikh').classList.toggle('tersembunyi', !!PAPARAN[p].tanpaPilihan);
+      document.querySelector('.kepala').classList.toggle('tersembunyi', !!PAPARAN[p].tanpaKepala);
       if (p !== 'padam') notisPadam = null;
       muat();
     }
 
+    // Panggil fungsi pelayan. Jika fungsi tiada (versi deploy lama) atau panggilan
+    // gagal serta-merta, gagal() tetap dipanggil supaya butang tak tersekat.
+    function panggil(nama, hujahan, ok, gagal) {
+      try {
+        const run = google.script.run.withSuccessHandler(ok).withFailureHandler(gagal);
+        if (typeof run[nama] !== 'function') {
+          throw new Error('Fungsi "' + nama + '" tiada di pelayan. Pastikan semua fail terkini disimpan (Ctrl+S) dan deploy New version.');
+        }
+        run[nama](...hujahan);
+      } catch (e) {
+        setTimeout(() => gagal(e), 0);
+      }
+    }
+    const teksRalat = (e) => (e && e.message ? e.message : String(e));
+
     function muat() {
       const p = paparan;
+      if (!PAPARAN[p].api) { PAPARAN[p].papar(); return; }   // paparan tanpa data pelayan
       $('kandungan').classList.add('muat');
-      google.script.run
-        .withSuccessHandler((d) => {
+      panggil(PAPARAN[p].api, hujah(p),
+        (d) => {
           if (p !== paparan) return;   // pengguna dah tukar menu
           $('kandungan').classList.remove('muat');
           kongsi(d);
           PAPARAN[p].papar(d);
-        })
-        .withFailureHandler((e) => {
+        },
+        (e) => {
           $('kandungan').classList.remove('muat');
-          $('kandungan').replaceChildren(el('div', { class: 'kad ralat' }, 'Gagal memuatkan data: ' + (e && e.message ? e.message : e)));
-        })[PAPARAN[p].api](...hujah(p));
+          $('kandungan').replaceChildren(el('div', { class: 'kad ralat' }, 'Gagal memuatkan data: ' + teksRalat(e)));
+        });
     }
 
     // Bahagian yang sama untuk semua paparan: header, status, dropdown.
@@ -433,6 +480,140 @@
       ];
     }
 
+    /* ---------------- Import CSV (admin) ---------------- */
+    const IKON = {
+      awan: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.5A3.8 3.8 0 0 1 17.5 18"/><path d="M12 12v8"/><path d="M8.5 15.5 12 12l3.5 3.5"/></svg>`,
+      muatTurun: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 20h14"/></svg>`,
+      info: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>`,
+      hantar: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10 14"/><path d="M21 3l-7 18-4-7-7-4z"/></svg>`,
+      simpan: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17 19 7.5"/></svg>`,
+    };
+    const ikon = (n) => { const t = document.createElement('template'); t.innerHTML = IKON[n]; return t.content.firstChild; };
+    const hariIniIso = () => { const k = new Date(), p2 = (n) => String(n).padStart(2, '0'); return k.getFullYear() + '-' + p2(k.getMonth() + 1) + '-' + p2(k.getDate()); };
+    let imp = { tarikh: null, fail: null, teks: null, hasil: null, notis: null, sibuk: false };
+
+    function paparImport() {
+      if (!imp.tarikh) imp.tarikh = hariIniIso();
+      const kad = el('section', { class: 'kad seksyen' });
+
+      const turun = el('button', { class: 'butang-hijau-lembut', type: 'button' }, ikon('muatTurun'), 'Muat Turun Template CSV');
+      turun.addEventListener('click', muatTurunTemplate);
+      kad.append(el('div', { class: 'imp-kepala' },
+        el('div', { class: 'imp-tajuk' }, el('div', { class: 'imp-ikon' }, ikon('awan')),
+          el('div', {}, el('h2', {}, 'Import Fail CSV IDME MOEIS'),
+            el('p', {}, 'Muat naik fail CSV kehadiran yang dieksport daripada sistem IDME MOEIS'))),
+        turun));
+
+      const tarikh = el('input', { type: 'date', id: 'impTarikh', max: hariIniIso() });
+      tarikh.value = imp.tarikh;
+      tarikh.addEventListener('change', () => { imp.tarikh = tarikh.value; imp.hasil = null; imp.notis = null; paparImport(); });
+
+      const inputFail = el('input', { type: 'file', id: 'impFail', accept: '.csv,text/csv' });
+      const namaFail = el('span', { class: 'nama' }, imp.fail ? imp.fail.name : 'Tiada fail dipilih');
+      inputFail.addEventListener('change', () => {
+        const f = inputFail.files[0];
+        imp.hasil = null; imp.notis = null; imp.teks = null; imp.fail = f || null;
+        if (!f) return paparImport();
+        if (f.size > 1024 * 1024) { imp.fail = null; imp.notis = { ok: false, mesej: 'Fail terlalu besar (had 1 MB).' }; return paparImport(); }
+        const r = new FileReader();
+        r.onload = () => { imp.teks = r.result; paparImport(); };
+        r.onerror = () => { imp.fail = null; imp.notis = { ok: false, mesej: 'Fail tidak dapat dibaca.' }; paparImport(); };
+        r.readAsText(f, 'UTF-8');
+      });
+      kad.append(el('div', { class: 'imp-medan' },
+        el('div', {}, el('label', { for: 'impTarikh' }, '1. Pilih Tarikh Kehadiran:'), tarikh),
+        el('div', {}, el('label', { for: 'impFail' }, '2. Pilih Fail CSV IDME MOEIS:'),
+          el('label', { class: 'pilih-fail', for: 'impFail' }, el('span', { class: 'btn' }, 'Pilih Fail'), namaFail, inputFail))));
+
+      kad.append(el('div', { class: 'info-format' }, ikon('info'),
+        el('div', {}, el('b', {}, 'Format IDME MOEIS yang disokong:'),
+          'Sistem membaca format pecahan ', el('code', {}, 'Hadir / Jumlah Pelajar'), ' contohnya ', el('b', { style: 'display:inline' }, '22/23'),
+          ' atau ', el('b', { style: 'display:inline' }, '25/25'), ', dan mengesan nilai yang ditukar oleh Excel menjadi tarikh (contoh ',
+          el('i', {}, '9-Sep'), '). Nilai itu dibetulkan dan perlu disahkan sebelum disimpan.')));
+
+      const hantar = el('button', { class: 'butang-utama', type: 'button' }, ikon('hantar'), imp.sibuk ? 'Menghantar...' : 'Hantar');
+      hantar.disabled = !imp.teks || !imp.tarikh || !!imp.sibuk || !!imp.hasil;
+      hantar.addEventListener('click', hantarImport);
+      kad.append(hantar);
+
+      const bahagian = [];
+      if (imp.notis) bahagian.push(el('div', { class: 'notis ' + (imp.notis.ok ? 'ok' : 'ralat') }, imp.notis.mesej,
+        imp.notis.ok ? lihatDashboard(imp.notis.tarikh) : null));
+      bahagian.push(kad);
+      if (imp.hasil) bahagian.push(...keputusanHantar(imp.hasil));
+      $('kandungan').replaceChildren(...bahagian);
+    }
+
+    function lihatDashboard(iso) {
+      const a = el('a', { href: '#', style: 'margin-left:8px;color:inherit;font-weight:600' }, 'Lihat dashboard →');
+      a.addEventListener('click', (e) => { e.preventDefault(); pilihan.utama = iso; tukarPaparan('utama'); });
+      return a;
+    }
+
+    // Hantar terus. Pelayan pulang perluSahkan jika ada nilai yang dibetulkan dari format tarikh Excel.
+    function hantarImport() {
+      const tarikh = imp.tarikh;
+      if (!confirm('Simpan data kehadiran untuk ' + tarikhPanjang(tarikh) + '?\nFail: ' + (imp.fail ? imp.fail.name : ''))) return;
+      hantarKePelayan(false);
+    }
+
+    function hantarKePelayan(sahkan) {
+      const tarikh = imp.tarikh;
+      imp.sibuk = true; imp.notis = null; paparImport();
+      panggil('prosesUpload', [tarikh, imp.teks, sahkan],
+        (h) => {
+          imp.sibuk = false;
+          if (h.ok) imp = { tarikh: null, fail: null, teks: null, hasil: null, notis: { ok: true, mesej: h.mesej, tarikh }, sibuk: false };
+          else if (h.perluSahkan || (h.gagal && h.gagal.length)) imp.hasil = h;
+          else { imp.hasil = null; imp.notis = { ok: false, mesej: h.mesej }; }
+          paparImport();
+        },
+        (e) => { imp.sibuk = false; imp.hasil = null; imp.notis = { ok: false, mesej: 'Ralat: ' + teksRalat(e) }; paparImport(); });
+    }
+
+    function batalImport() { imp.hasil = null; imp.notis = null; paparImport(); }
+
+    function keputusanHantar(h) {
+      if (h.gagal && h.gagal.length) {
+        const tutup = el('button', { class: 'butang', type: 'button' }, 'Tutup');
+        tutup.addEventListener('click', batalImport);
+        return [el('section', { class: 'kad seksyen' },
+          el('div', { class: 'notis ralat', style: 'margin-bottom:12px' }, h.mesej + ' Semak fail CSV dan cuba lagi.'),
+          el('div', { class: 'bungkus' }, el('table', { class: 'jadual' },
+            el('thead', {}, el('tr', {}, el('th', {}, 'Baris'), el('th', {}, 'Kandungan'), el('th', {}, 'Sebab'))),
+            el('tbody', {}, h.gagal.map((g) => el('tr', {}, el('td', {}, g.baris),
+              el('td', { style: 'white-space:normal' }, g.kandungan), el('td', { style: 'white-space:normal' }, g.sebab)))))),
+          el('div', { class: 'baris-butang' }, tutup))];
+      }
+      // perluSahkan: senarai pembetulan + Sahkan & Simpan
+      const sah = el('button', { class: 'butang-utama', type: 'button' }, ikon('simpan'), imp.sibuk ? 'Menyimpan...' : 'Sahkan & Simpan');
+      sah.disabled = !!imp.sibuk;
+      sah.addEventListener('click', () => hantarKePelayan(true));
+      const batal = el('button', { class: 'butang', type: 'button' }, 'Batal');
+      batal.disabled = !!imp.sibuk;
+      batal.addEventListener('click', batalImport);
+      return [el('section', { class: 'kad seksyen' },
+        el('h3', {}, 'Sahkan pembetulan'),
+        el('p', { class: 'sub' }, 'Belum ada data disimpan untuk ' + tarikhPanjang(imp.tarikh) + '.'),
+        el('div', { class: 'notis info' }, h.mesej + ' Bulan = hadir, hari = jumlah.'),
+        el('div', { class: 'bungkus' }, el('table', { class: 'jadual' },
+          el('thead', {}, el('tr', {}, el('th', {}, 'Tingkatan'), el('th', {}, 'Kelas'), el('th', {}, 'Dalam fail'), el('th', { class: 'n' }, 'Disimpan sebagai'))),
+          el('tbody', {}, h.pembetulan.map((x) => el('tr', { class: 'dibetulkan' },
+            el('td', {}, tajukKelas(x.tingkatan)), el('td', {}, el('b', {}, tajukKelas(x.kelas))),
+            el('td', {}, x.asal), el('td', { class: 'n' }, el('b', {}, x.baru))))))),
+        el('div', { class: 'baris-butang' }, sah, batal))];
+    }
+
+    // Template: header IDME + contoh baris, termasuk baris kosong ",,,," seperti fail sebenar.
+    function muatTurunTemplate() {
+      const baris = ['Bil.,Tahun/Tingkatan,Kelas,Kehadiran,Jumlah Pelajar',
+        '1,TINGKATAN SATU,AMANAH,KEHADIRAN TELAH DIKEMASKINI,22/23', ',,,,',
+        '2,TINGKATAN SATU,BESTARI,KEHADIRAN TELAH DIKEMASKINI,24/25', ',,,,'];
+      const blob = new Blob(['﻿' + baris.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
+      const a = el('a', { href: URL.createObjectURL(blob), download: 'template_kehadiran_idme.csv' });
+      document.body.append(a); a.click(); a.remove();
+    }
+
     /* ---------------- Padam Data (admin) ---------------- */
     function paparPadam(d) {
       $('subtajuk').textContent = 'Padam semua data kelas bagi satu tarikh, contohnya bila CSV diupload dengan tarikh yang salah.';
@@ -481,10 +662,9 @@
       padam.addEventListener('click', () => {
         padam.disabled = true; batal.disabled = true; input.disabled = true;
         padam.textContent = 'Memadam...';
-        google.script.run
-          .withSuccessHandler((h) => { notisPadam = h; muat(); })
-          .withFailureHandler((e) => { notisPadam = { ok: false, mesej: 'Ralat pelayan: ' + (e && e.message ? e.message : e) }; muat(); })
-          .padamDataWeb(t.iso, input.value.trim());
+        panggil('padamDataWeb', [t.iso, input.value.trim()],
+          (h) => { notisPadam = h; muat(); },
+          (e) => { notisPadam = { ok: false, mesej: 'Ralat: ' + teksRalat(e) }; muat(); });
       });
       sel.replaceChildren(el('div', { class: 'sahkan' },
         el('span', { style: 'font-size:12px;color:var(--teks2)' }, 'Taip ', el('b', {}, sasaran), ' untuk sahkan'),

@@ -337,7 +337,6 @@ function doGet(e) {
       .addMetaTag('viewport', 'width=device-width, initial-scale=1');
   }
   const t = HtmlService.createTemplateFromFile('App');
-  t.urlUpload = ScriptApp.getService().getUrl() + '?p=upload';
   t.peranan = a.peranan;
   return t.evaluate()
     .setTitle('SEMARAK HEM - Dashboard Kehadiran')
