@@ -263,21 +263,36 @@
       muat();
     }
 
+    // Panggil fungsi pelayan. Jika fungsi tiada (versi deploy lama) atau panggilan
+    // gagal serta-merta, gagal() tetap dipanggil supaya butang tak tersekat.
+    function panggil(nama, hujahan, ok, gagal) {
+      try {
+        const run = google.script.run.withSuccessHandler(ok).withFailureHandler(gagal);
+        if (typeof run[nama] !== 'function') {
+          throw new Error('Fungsi "' + nama + '" tiada di pelayan. Pastikan semua fail terkini disimpan (Ctrl+S) dan deploy New version.');
+        }
+        run[nama](...hujahan);
+      } catch (e) {
+        setTimeout(() => gagal(e), 0);
+      }
+    }
+    const teksRalat = (e) => (e && e.message ? e.message : String(e));
+
     function muat() {
       const p = paparan;
       if (!PAPARAN[p].api) { PAPARAN[p].papar(); return; }   // paparan tanpa data pelayan
       $('kandungan').classList.add('muat');
-      google.script.run
-        .withSuccessHandler((d) => {
+      panggil(PAPARAN[p].api, hujah(p),
+        (d) => {
           if (p !== paparan) return;   // pengguna dah tukar menu
           $('kandungan').classList.remove('muat');
           kongsi(d);
           PAPARAN[p].papar(d);
-        })
-        .withFailureHandler((e) => {
+        },
+        (e) => {
           $('kandungan').classList.remove('muat');
-          $('kandungan').replaceChildren(el('div', { class: 'kad ralat' }, 'Gagal memuatkan data: ' + (e && e.message ? e.message : e)));
-        })[PAPARAN[p].api](...hujah(p));
+          $('kandungan').replaceChildren(el('div', { class: 'kad ralat' }, 'Gagal memuatkan data: ' + teksRalat(e)));
+        });
     }
 
     // Bahagian yang sama untuk semua paparan: header, status, dropdown.
@@ -537,24 +552,22 @@
 
     function semakImport() {
       imp.sibuk = 'semak'; imp.notis = null; imp.hasil = null; paparImport();
-      google.script.run
-        .withSuccessHandler((h) => { imp.sibuk = false; if (h.ralat) imp.notis = { ok: false, mesej: h.ralat }; else imp.hasil = h; paparImport(); })
-        .withFailureHandler((e) => { imp.sibuk = false; imp.notis = { ok: false, mesej: 'Ralat pelayan: ' + (e && e.message ? e.message : e) }; paparImport(); })
-        .semakUpload(imp.tarikh, imp.teks);
+      panggil('semakUpload', [imp.tarikh, imp.teks],
+        (h) => { imp.sibuk = false; if (h.ralat) imp.notis = { ok: false, mesej: h.ralat }; else imp.hasil = h; paparImport(); },
+        (e) => { imp.sibuk = false; imp.notis = { ok: false, mesej: 'Ralat: ' + teksRalat(e) }; paparImport(); });
     }
 
     function simpanImport() {
       imp.sibuk = 'simpan'; paparImport();
       const tarikh = imp.tarikh;
-      google.script.run
-        .withSuccessHandler((h) => {
+      panggil('prosesUpload', [tarikh, imp.teks, true],
+        (h) => {
           imp.sibuk = false;
           if (h.ok) { imp = { tarikh: null, fail: null, teks: null, hasil: null, notis: { ok: true, mesej: h.mesej, tarikh }, sibuk: false }; }
           else { imp.notis = { ok: false, mesej: h.mesej }; imp.hasil = null; }
           paparImport();
-        })
-        .withFailureHandler((e) => { imp.sibuk = false; imp.notis = { ok: false, mesej: 'Ralat pelayan: ' + (e && e.message ? e.message : e) }; paparImport(); })
-        .prosesUpload(tarikh, imp.teks, true);
+        },
+        (e) => { imp.sibuk = false; imp.notis = { ok: false, mesej: 'Ralat: ' + teksRalat(e) }; paparImport(); });
     }
 
     function pratonton(h) {
@@ -663,10 +676,9 @@
       padam.addEventListener('click', () => {
         padam.disabled = true; batal.disabled = true; input.disabled = true;
         padam.textContent = 'Memadam...';
-        google.script.run
-          .withSuccessHandler((h) => { notisPadam = h; muat(); })
-          .withFailureHandler((e) => { notisPadam = { ok: false, mesej: 'Ralat pelayan: ' + (e && e.message ? e.message : e) }; muat(); })
-          .padamDataWeb(t.iso, input.value.trim());
+        panggil('padamDataWeb', [t.iso, input.value.trim()],
+          (h) => { notisPadam = h; muat(); },
+          (e) => { notisPadam = { ok: false, mesej: 'Ralat: ' + teksRalat(e) }; muat(); });
       });
       sel.replaceChildren(el('div', { class: 'sahkan' },
         el('span', { style: 'font-size:12px;color:var(--teks2)' }, 'Taip ', el('b', {}, sasaran), ' untuk sahkan'),
