@@ -269,7 +269,7 @@ function simpanKehadiran_(tarikhIso, rows) {
  * Jika ada nilai yang dibetulkan (contoh "18-Dec" -> 12/18) dan sahkan
  * bukan true, tiada apa disimpan; pulang perluSahkan + senarai pembetulan.
  */
-function prosesUpload(tarikhIso, csvText, sahkan) {
+function prosesUpload(tarikhIso, csvText, sahkan, namaFail) {
   try {
     semakAkses_(true);
     if (typeof csvText !== 'string') throw new Error('Kandungan fail tidak diterima.');
@@ -303,6 +303,8 @@ function prosesUpload(tarikhIso, csvText, sahkan) {
     const n = simpanKehadiran_(tarikhIso, hasil.rows);
     const jumHadir = hasil.rows.reduce(function (s, r) { return s + r.hadir; }, 0);
     const jumMurid = hasil.rows.reduce(function (s, r) { return s + r.jumlah; }, 0);
+    tulisLog_({ tindakan: 'Import', iso: tarikhIso, bilKelas: n, hadir: jumHadir, jumlah: jumMurid,
+      dibetulkan: hasil.pembetulan.length, catatan: namaFail ? 'Fail: ' + namaFail : '' });
     const [y, m, d] = tarikhIso.split('-');
     return {
       ok: true,

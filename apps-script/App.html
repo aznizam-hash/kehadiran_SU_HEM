@@ -138,6 +138,9 @@
     .tag-betul { font-size: 11px; background: var(--amaran-lembut); color: var(--amaran); border-radius: 4px; padding: 1px 6px; margin-left: 6px; white-space: nowrap; }
     .baris-butang { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
     @media (max-width: 760px) { .imp-medan { grid-template-columns: 1fr; } }
+    .tindakan { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+    .tindakan.import { background: var(--utama-lembut); color: var(--utama); }
+    .tindakan.padam { background: var(--merah-lembut); color: var(--merah); }
     .naik { color: var(--utama); } .turun { color: var(--merah); }
     .ringkas { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: var(--teks2); }
     .ringkas b { color: var(--teks); font-size: 15px; }
@@ -161,6 +164,8 @@
       .kpi .nilai { font-size: 24px; }
       .bar-mini { display: none; }
       .sk { display: none; }
+      .sejarah td { white-space: normal; }
+      .sejarah .kecil-sahaja { word-break: break-all; }
       .kecil-sahaja { display: block; font-size: 11px; color: var(--teks2); font-weight: 400; }
       .jadual td, .jadual th { padding: 8px 6px; }
     }
@@ -193,6 +198,7 @@
 <? if (peranan === 'admin') { ?>
         <h4 class="h4-admin">PENTADBIR (ADMIN)</h4>
         <a data-paparan="import"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.5A3.8 3.8 0 0 1 17.5 18"/><path d="M12 12v8"/><path d="M8.5 15.5 12 12l3.5 3.5"/></svg><span>Import CSV IDME</span></a>
+        <a data-paparan="sejarah"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><span>Sejarah Import</span></a>
         <a data-paparan="padam"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg><span>Padam Data</span></a>
 <? } ?>
       </div>
@@ -244,12 +250,13 @@
       analisis: { tajuk: 'Analisis Kelas', label: 'Tempoh', api: 'getAnalisis', papar: (d) => paparAnalisis(d) },
       trend: { tajuk: 'Trend Kehadiran', label: 'Julat', api: 'getTrend', papar: (d) => paparTrend(d) },
       padam: { tajuk: 'Padam Data', label: '', api: 'getSenaraiPadam', papar: (d) => paparPadam(d), tanpaPilihan: true },
+      sejarah: { tajuk: 'Sejarah Import', label: '', api: 'getSejarah', papar: (d) => paparSejarah(d), tanpaPilihan: true },
       import: { tajuk: 'Import CSV IDME', label: '', api: null, papar: () => paparImport(), tanpaPilihan: true, tanpaKepala: true },
     };
     let notisPadam = null;
     const pilihan = { utama: null, analisis: 'semua', trend: '30' };
     let pilihTrend = '';
-    const hujah = (p) => (p === 'trend' ? [pilihan.trend, pilihTrend] : p === 'padam' ? [] : [pilihan[p]]);
+    const hujah = (p) => (p === 'trend' ? [pilihan.trend, pilihTrend] : (p === 'padam' || p === 'sejarah') ? [] : [pilihan[p]]);
     let paparan = 'utama';
 
     function tukarPaparan(p) {
@@ -560,7 +567,7 @@
     function hantarKePelayan(sahkan) {
       const tarikh = imp.tarikh;
       imp.sibuk = true; imp.notis = null; paparImport();
-      panggil('prosesUpload', [tarikh, imp.teks, sahkan],
+      panggil('prosesUpload', [tarikh, imp.teks, sahkan, imp.fail ? imp.fail.name : ''],
         (h) => {
           imp.sibuk = false;
           if (h.ok) imp = { tarikh: null, fail: null, teks: null, hasil: null, notis: { ok: true, mesej: h.mesej, tarikh }, sibuk: false };
@@ -612,6 +619,51 @@
       const blob = new Blob(['﻿' + baris.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
       const a = el('a', { href: URL.createObjectURL(blob), download: 'template_kehadiran_idme.csv' });
       document.body.append(a); a.click(); a.remove();
+    }
+
+    /* ---------------- Sejarah Import (admin) ---------------- */
+    let tapisSejarah = 'semua';
+    const masaPaparan = (m) => { if (!/^\d{4}-\d{2}-\d{2} /.test(m)) return m; const [t, j] = m.split(' '); return tarikhPanjang(t) + ', ' + j; };
+
+    function paparSejarah(d) {
+      $('subtajuk').textContent = 'Rekod setiap import dan padam data. Upload yang ditolak tidak direkod.';
+      if (!d.rekod.length) {
+        $('kandungan').replaceChildren(el('div', { class: 'kad kosong' },
+          'Belum ada rekod. Rekod bermula dari import atau padam yang pertama selepas fungsi ini dipasang.'));
+        return;
+      }
+      const kad = el('section', { class: 'kad seksyen' });
+      const lukis = () => {
+        const senarai = d.rekod.filter((r) => tapisSejarah === 'semua' || r.tindakan.toLowerCase() === tapisSejarah);
+        const cip = el('div', { class: 'cip' }, [['semua', 'Semua'], ['import', 'Import'], ['padam', 'Padam']].map(([k, t]) => {
+          const n = k === 'semua' ? d.rekod.length : d.rekod.filter((r) => r.tindakan.toLowerCase() === k).length;
+          const b = el('button', { class: k === tapisSejarah ? 'aktif' : '', type: 'button' }, t + ' (' + n + ')');
+          b.addEventListener('click', () => { tapisSejarah = k; lukis(); });
+          return b;
+        }));
+        const badan = el('tbody', {}, senarai.map((r) => el('tr', {},
+          el('td', {}, masaPaparan(r.masa), el('span', { class: 'kecil-sahaja' }, r.pengguna)),
+          el('td', { class: 'sk' }, r.pengguna),
+          el('td', {}, el('span', { class: 'tindakan ' + r.tindakan.toLowerCase() }, r.tindakan)),
+          el('td', {}, el('b', {}, r.tarikh), el('span', { class: 'kecil-sahaja' }, r.bilKelas + ' kelas, ' + r.hadir + '/' + r.jumlah)),
+          el('td', { class: 'n sk' }, r.bilKelas),
+          el('td', { class: 'n sk' }, r.hadir + ' / ' + r.jumlah),
+          el('td', { class: 'n sk' }, r.dibetulkan == null ? '–' : r.dibetulkan),
+          el('td', { class: 'sk', style: 'white-space:normal;color:var(--teks2)' }, r.catatan))));
+        kad.replaceChildren(
+          el('h3', {}, 'Sejarah import dan padam'),
+          el('p', { class: 'sub' }, d.jumlahRekod > d.rekod.length
+            ? `Memaparkan ${d.rekod.length} rekod terkini daripada ${d.jumlahRekod}. Rekod penuh dalam tab Log.`
+            : `${d.rekod.length} rekod, terbaru di atas.`),
+          cip,
+          el('div', { class: 'bungkus' }, el('table', { class: 'jadual sejarah' },
+            el('thead', {}, el('tr', {}, el('th', {}, 'Masa'), el('th', { class: 'sk' }, 'Pengguna'), el('th', {}, 'Tindakan'),
+              el('th', {}, 'Tarikh data'), el('th', { class: 'n sk' }, 'Kelas'), el('th', { class: 'n sk' }, 'Hadir / Jumlah'),
+              el('th', { class: 'n sk' }, 'Dibetulkan'), el('th', { class: 'sk' }, 'Catatan'))),
+            badan)));
+      };
+      lukis();
+      $('kandungan').replaceChildren(kad);
     }
 
     /* ---------------- Padam Data (admin) ---------------- */

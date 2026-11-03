@@ -11,6 +11,7 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 | `apps-script/App.html` | Web app (URL utama): Dashboard Utama, Analisis Kelas, Trend Kehadiran; Import CSV (butang Hantar; pembetulan Excel perlu disahkan) dan Padam Data untuk admin. Borang upload lama masih di `?p=upload` |
 | `apps-script/Dashboard.gs` | `binaDashboard` — bina tab Dashboard, Analisis, Trend |
 | `apps-script/Akses.gs`, `apps-script/Ditolak.html` | Kawalan akses: tab **Pengguna** (admin / lihat), halaman akses ditolak |
+| `apps-script/Log.gs` | Sejarah Import: tab **Log** (dicipta automatik), rekod setiap import dan padam |
 | `apps-script/Padam.gs` | Menu **Kehadiran > Padam data satu tarikh** dalam Sheet |
 | `apps-script/Index.html` | Borang upload (tarikh + fail CSV) |
 | `apps-script/appsscript.json` | Zon masa `Asia/Kuala_Lumpur`, web app "Me" / "Only myself" |
@@ -48,7 +49,7 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 
 - Pemilik script (akaun yang deploy) sentiasa **admin**.
 - Pengguna lain disenaraikan dalam tab **Pengguna** (jalankan `setupPengguna` sekali): lajur A emel, lajur B peranan.
-  - `admin`: semua menu termasuk Import CSV dan Padam Data.
+  - `admin`: semua menu termasuk Import CSV, Sejarah Import dan Padam Data.
   - `lihat`: Dashboard, Analisis, Trend sahaja.
 - Orang yang tiada dalam senarai nampak halaman "Akses ditolak".
 - Deploy: **Execute as: Me**, **Who has access: Anyone within moe-dl.edu.my**. Jangan kongsi fail Sheet kepada pengguna `lihat`; mereka tak perlukannya.
