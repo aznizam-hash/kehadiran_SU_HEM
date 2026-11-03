@@ -7,7 +7,7 @@ const assert = require('assert');
 const ctx = {};
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'apps-script', 'Api.gs'), 'utf8') +
-  '\nthis.ringkas = ringkasDashboard_; this.label = labelTingkatan_; this.analisis = ringkasAnalisis_;', ctx);
+  '\nthis.ringkas = ringkasDashboard_; this.label = labelTingkatan_; this.analisis = ringkasAnalisis_; this.trend = ringkasTrend_;', ctx);
 
 assert.strictEqual(ctx.label('TINGKATAN SATU'), 'T1');
 assert.strictEqual(ctx.label('TINGKATAN ENAM SEM 1'), 'T6 Sem 1');
@@ -62,5 +62,45 @@ assert.strictEqual(a.tempoh, 'semua');
 a = ctx.analisis([], 'semua', 0.95);
 assert.strictEqual(a.ringkasan.peratus, null);
 assert.strictEqual(a.kelas.length, 0);
+
+
+// Trend
+const tr = [];
+['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30'].forEach((iso, i) => {
+  tr.push(r(iso, 'TINGKATAN SATU', 'A', 15 + i, 20));
+  tr.push(r(iso, 'TINGKATAN DUA', 'A', 20, 20));
+});
+let t = ctx.trend(tr, 'semua', '', 0.95);
+assert.strictEqual(t.siri.length, 5);
+assert.strictEqual(t.siri[0].iso, '2026-10-26');            // menaik
+assert.strictEqual(t.siri[0].sekolah.peratus, 35 / 40);
+assert.strictEqual(t.siri[0].pilihan, null);
+assert.strictEqual(t.ringkasan.purataSekolah, (35 + 36 + 37 + 38 + 39) / 200);
+assert.strictEqual(t.ringkasan.tertinggi.iso, '2026-10-30');
+assert.strictEqual(t.ringkasan.terendah.iso, '2026-10-26');
+assert.strictEqual(t.senaraiPilihan.tingkatan.length, 2);
+assert.strictEqual(t.senaraiPilihan.kelas.length, 2);
+
+t = ctx.trend(tr, '7', 'K:TINGKATAN SATU|A', 0.95);
+assert.strictEqual(t.pilih, 'K:TINGKATAN SATU|A');
+assert.strictEqual(t.labelPilihan, 'A (T1)');
+assert.strictEqual(t.siri[4].pilihan.peratus, 19 / 20);
+assert.strictEqual(t.ringkasan.purataPilihan, 85 / 100);
+
+t = ctx.trend(tr, '30', 'T:TINGKATAN DUA', 0.95);
+assert.strictEqual(t.labelPilihan, 'T2');
+assert.strictEqual(t.ringkasan.purataPilihan, 1);
+assert.strictEqual(t.ringkasan.hariCapai, 2);   // 38/40 (tepat 95%) dan 39/40
+
+// julat 7 ambil 7 hari DATA terakhir
+const banyak = [];
+for (let i = 1; i <= 10; i++) banyak.push(r('2026-10-' + String(i).padStart(2, '0'), 'TINGKATAN SATU', 'A', 19, 20));
+t = ctx.trend(banyak, '7', 'K:TIADA|X', 0.95);
+assert.strictEqual(t.siri.length, 7);
+assert.strictEqual(t.siri[0].iso, '2026-10-04');
+assert.strictEqual(t.pilih, '');                          // pilihan tak sah diabaikan
+t = ctx.trend([], 'semua', '', 0.95);
+assert.strictEqual(t.siri.length, 0);
+assert.strictEqual(t.ringkasan.purataSekolah, null);
 
 console.log('api.test.js: semua lulus');

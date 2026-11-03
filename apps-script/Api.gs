@@ -174,3 +174,91 @@ function getAnalisis(tempoh) {
   d.email = Session.getActiveUser().getEmail();
   return d;
 }
+
+/**
+ * Trend kehadiran mengikut tarikh.
+ * julat : '7' | '30' | 'semua'  -> bilangan HARI DATA terakhir (bukan hari kalendar).
+ * pilih : ''                      -> sekolah sahaja
+ *         'T:<tingkatan>'         -> satu tingkatan
+ *         'K:<tingkatan>|<kelas>' -> satu kelas
+ * Pilihan yang tiada dalam data diabaikan ('').
+ */
+function ringkasTrend_(rows, julat, pilih, kpi) {
+  const tarikhSemua = senaraiTarikh_(rows);
+  const j = julat === '7' || julat === '30' ? julat : 'semua';
+  const tarikhJulat = (j === 'semua' ? tarikhSemua : tarikhSemua.slice(0, Number(j))).slice().reverse();
+
+  // Senarai pilihan dari semua data (susunan IDME).
+  const semuaKelas = kumpulKelas_(rows);
+  const tingkatan = kumpulTingkatan_(semuaKelas, kpi).map(function (t) { return { nilai: 'T:' + t.nama, label: t.label, nama: t.nama }; });
+  const kelas = semuaKelas.map(function (k) {
+    return { nilai: 'K:' + k.tingkatan + '|' + k.kelas, label: k.label, kelas: k.kelas, tingkatan: k.tingkatan };
+  });
+  const sah = {};
+  tingkatan.concat(kelas).forEach(function (x) { sah[x.nilai] = true; });
+  const p = pilih && sah[pilih] ? pilih : '';
+
+  const padan = function (r) {
+    if (!p) return false;
+    if (p.indexOf('T:') === 0) return r.tingkatan === p.slice(2);
+    return r.tingkatan + '|' + r.kelas === p.slice(2);
+  };
+
+  const ikutTarikh = {};
+  tarikhJulat.forEach(function (iso) { ikutTarikh[iso] = { iso: iso, sh: 0, sj: 0, ph: 0, pj: 0 }; });
+  rows.forEach(function (r) {
+    const t = ikutTarikh[r.iso];
+    if (!t || !(r.jumlah > 0)) return;
+    t.sh += r.hadir; t.sj += r.jumlah;
+    if (padan(r)) { t.ph += r.hadir; t.pj += r.jumlah; }
+  });
+
+  const siri = tarikhJulat.map(function (iso) {
+    const t = ikutTarikh[iso];
+    return {
+      iso: iso,
+      sekolah: { hadir: t.sh, jumlah: t.sj, peratus: t.sj ? t.sh / t.sj : null },
+      pilihan: p && t.pj ? { hadir: t.ph, jumlah: t.pj, peratus: t.ph / t.pj } : null,
+    };
+  });
+
+  const purata = function (kunci) {
+    let h = 0, n = 0;
+    siri.forEach(function (s) { if (s[kunci]) { h += s[kunci].hadir; n += s[kunci].jumlah; } });
+    return n ? h / n : null;
+  };
+  const adaSekolah = siri.filter(function (s) { return s.sekolah.peratus != null; });
+  const tinggi = adaSekolah.reduce(function (a, s) { return !a || s.sekolah.peratus > a.sekolah.peratus ? s : a; }, null);
+  const rendah = adaSekolah.reduce(function (a, s) { return !a || s.sekolah.peratus < a.sekolah.peratus ? s : a; }, null);
+
+  let labelPilihan = '';
+  if (p.indexOf('T:') === 0) labelPilihan = labelTingkatan_(p.slice(2));
+  else if (p) { const k = p.slice(2).split('|'); labelPilihan = k[1] + ' (' + labelTingkatan_(k[0]) + ')'; }
+
+  return {
+    kpi: kpi,
+    tarikhSemua: tarikhSemua,
+    kemaskini: tarikhSemua[0] || null,
+    julat: j,
+    pilih: p,
+    labelPilihan: labelPilihan,
+    senaraiPilihan: { tingkatan: tingkatan, kelas: kelas },
+    siri: siri,
+    ringkasan: {
+      bilHari: siri.length,
+      purataSekolah: purata('sekolah'),
+      purataPilihan: p ? purata('pilihan') : null,
+      tertinggi: tinggi ? { iso: tinggi.iso, peratus: tinggi.sekolah.peratus } : null,
+      terendah: rendah ? { iso: rendah.iso, peratus: rendah.sekolah.peratus } : null,
+      hariCapai: adaSekolah.filter(function (s) { return s.sekolah.peratus >= kpi; }).length,
+    },
+  };
+}
+
+/** Dipanggil dari App.html. */
+function getTrend(julat, pilih) {
+  const td = tabData_();
+  const d = ringkasTrend_(bacaData_(td), julat, pilih, SASARAN_KPI);
+  d.email = Session.getActiveUser().getEmail();
+  return d;
+}

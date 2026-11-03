@@ -7,8 +7,8 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 | Fail | Isi |
 |---|---|
 | `apps-script/Code.gs` | `setupSistem`, `parseKehadiran`, `simpanKehadiran`, `prosesUpload`, `doGet`, `testParse` |
-| `apps-script/Api.gs` | `getDashboard` — data untuk web app dashboard (sasaran KPI 95%) |
-| `apps-script/App.html` | Web app dashboard (URL utama). Upload di `?p=upload` |
+| `apps-script/Api.gs` | `getDashboard`, `getAnalisis`, `getTrend` — data untuk web app (sasaran KPI 95%) |
+| `apps-script/App.html` | Web app (URL utama): Dashboard Utama, Analisis Kelas, Trend Kehadiran. Upload di `?p=upload` |
 | `apps-script/Dashboard.gs` | `binaDashboard` — bina tab Dashboard, Analisis, Trend |
 | `apps-script/Padam.gs` | Menu **Kehadiran > Padam data satu tarikh** dalam Sheet |
 | `apps-script/Index.html` | Borang upload (tarikh + fail CSV) |
