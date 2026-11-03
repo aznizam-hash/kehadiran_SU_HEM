@@ -316,9 +316,21 @@ function prosesUpload(tarikhIso, csvText, sahkan) {
   }
 }
 
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('Upload Kehadiran')
+/**
+ * URL tanpa parameter -> dashboard (App.html).
+ * ?p=upload            -> borang upload (Index.html).
+ */
+function doGet(e) {
+  const p = e && e.parameter ? e.parameter.p : '';
+  if (p === 'upload') {
+    return HtmlService.createHtmlOutputFromFile('Index')
+      .setTitle('Upload Kehadiran')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
+  const t = HtmlService.createTemplateFromFile('App');
+  t.urlUpload = ScriptApp.getService().getUrl() + '?p=upload';
+  return t.evaluate()
+    .setTitle('SEMARAK HEM - Dashboard Kehadiran')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 

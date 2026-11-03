@@ -7,16 +7,18 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 | Fail | Isi |
 |---|---|
 | `apps-script/Code.gs` | `setupSistem`, `parseKehadiran`, `simpanKehadiran`, `prosesUpload`, `doGet`, `testParse` |
+| `apps-script/Api.gs` | `getDashboard` — data untuk web app dashboard (sasaran KPI 95%) |
+| `apps-script/App.html` | Web app dashboard (URL utama). Upload di `?p=upload` |
 | `apps-script/Dashboard.gs` | `binaDashboard` — bina tab Dashboard, Analisis, Trend |
 | `apps-script/Padam.gs` | Menu **Kehadiran > Padam data satu tarikh** dalam Sheet |
 | `apps-script/Index.html` | Borang upload (tarikh + fail CSV) |
 | `apps-script/appsscript.json` | Zon masa `Asia/Kuala_Lumpur`, web app "Me" / "Only myself" |
-| `test/parse.test.js`, `test/padam.test.js` | Ujian di luar Apps Script: `node test/parse.test.js` |
+| `test/*.test.js` | Ujian di luar Apps Script: `node test/parse.test.js` |
 
 ## Pasang
 
 1. Buka Sheet `Dashboard Kehadiran` > **Extensions > Apps Script**.
-2. Salin `Code.gs`, `Dashboard.gs`, `Index.html` (nama fail HTML mesti `Index`).
+2. Salin semua fail dalam `apps-script/` (nama fail HTML mesti `Index` dan `App`).
 3. **Project Settings** > tanda *Show "appsscript.json"* > salin isi `appsscript.json`.
 4. **File > Settings** dalam Sheet: pastikan zon masa `(GMT+08:00) Kuala Lumpur`.
 
