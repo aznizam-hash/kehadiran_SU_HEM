@@ -39,42 +39,64 @@ function bacaData_(td) {
 }
 
 /**
- * Ringkasan untuk satu tarikh. Tiada panggilan ke Sheet (boleh diuji dengan Node).
- * Jika tarikhIso kosong atau tiada dalam data, guna tarikh terkini.
+ * Kumpul baris kepada kelas (tingkatan + kelas), jumlahkan hadir/jumlah
+ * merentas tarikh. Susunan ikut kali pertama muncul (susunan IDME).
  */
-function ringkasDashboard_(rows, tarikhIso, kpi) {
-  const set = {};
-  rows.forEach(function (r) { set[r.iso] = true; });
-  const tarikhSemua = Object.keys(set).sort().reverse();
-  const iso = tarikhIso && set[tarikhIso] ? tarikhIso : (tarikhSemua[0] || null);
+function kumpulKelas_(rows) {
+  const kelas = [];
+  const indeks = {};
+  rows.forEach(function (r) {
+    if (!(r.jumlah > 0)) return;
+    const kunci = r.tingkatan + '|' + r.kelas;
+    if (!(kunci in indeks)) {
+      indeks[kunci] = kelas.length;
+      kelas.push({ tingkatan: r.tingkatan, label: labelTingkatan_(r.tingkatan), kelas: r.kelas,
+        hadir: 0, jumlah: 0, bilHari: 0 });
+    }
+    const k = kelas[indeks[kunci]];
+    k.hadir += r.hadir;
+    k.jumlah += r.jumlah;
+    k.bilHari++;
+  });
+  kelas.forEach(function (k) { k.peratus = k.hadir / k.jumlah; });
+  return kelas;
+}
 
-  const kelas = rows
-    .filter(function (r) { return r.iso === iso && r.jumlah > 0; })
-    .map(function (r) {
-      return {
-        tingkatan: r.tingkatan,
-        label: labelTingkatan_(r.tingkatan),
-        kelas: r.kelas,
-        hadir: r.hadir,
-        jumlah: r.jumlah,
-        peratus: r.hadir / r.jumlah,
-      };
-    });
-
-  // Kumpul per tingkatan, ikut susunan pertama muncul (susunan IDME: T1..T5, KKM, T6).
+/** Kumpul kelas kepada tingkatan (purata berwajaran), ikut susunan pertama muncul. */
+function kumpulTingkatan_(kelas, kpi) {
   const tingkatan = [];
   const indeks = {};
   kelas.forEach(function (k) {
     if (!(k.tingkatan in indeks)) {
       indeks[k.tingkatan] = tingkatan.length;
-      tingkatan.push({ nama: k.tingkatan, label: k.label, hadir: 0, jumlah: 0, bilKelas: 0 });
+      tingkatan.push({ nama: k.tingkatan, label: k.label, hadir: 0, jumlah: 0, bilKelas: 0, bilBawah: 0 });
     }
     const t = tingkatan[indeks[k.tingkatan]];
     t.hadir += k.hadir;
     t.jumlah += k.jumlah;
     t.bilKelas++;
+    if (k.peratus < kpi) t.bilBawah++;
   });
   tingkatan.forEach(function (t) { t.peratus = t.hadir / t.jumlah; });
+  return tingkatan;
+}
+
+function senaraiTarikh_(rows) {
+  const set = {};
+  rows.forEach(function (r) { set[r.iso] = true; });
+  return Object.keys(set).sort().reverse();
+}
+
+/**
+ * Ringkasan untuk satu tarikh. Tiada panggilan ke Sheet (boleh diuji dengan Node).
+ * Jika tarikhIso kosong atau tiada dalam data, guna tarikh terkini.
+ */
+function ringkasDashboard_(rows, tarikhIso, kpi) {
+  const tarikhSemua = senaraiTarikh_(rows);
+  const iso = tarikhIso && tarikhSemua.indexOf(tarikhIso) >= 0 ? tarikhIso : (tarikhSemua[0] || null);
+
+  const kelas = kumpulKelas_(rows.filter(function (r) { return r.iso === iso; }));
+  const tingkatan = kumpulTingkatan_(kelas, kpi);
 
   const hadir = kelas.reduce(function (s, k) { return s + k.hadir; }, 0);
   const jumlah = kelas.reduce(function (s, k) { return s + k.jumlah; }, 0);
@@ -108,6 +130,47 @@ function ringkasDashboard_(rows, tarikhIso, kpi) {
 function getDashboard(tarikhIso) {
   const td = tabData_();
   const d = ringkasDashboard_(bacaData_(td), tarikhIso, SASARAN_KPI);
+  d.email = Session.getActiveUser().getEmail();
+  return d;
+}
+
+/**
+ * Analisis kelas untuk satu tempoh: 'semua' (semua tarikh) atau satu tarikh (yyyy-mm-dd).
+ * Tempoh yang tiada dalam data dianggap 'semua'.
+ */
+function ringkasAnalisis_(rows, tempoh, kpi) {
+  const tarikhSemua = senaraiTarikh_(rows);
+  const t = tempoh && tempoh !== 'semua' && tarikhSemua.indexOf(tempoh) >= 0 ? tempoh : 'semua';
+  const dipilih = t === 'semua' ? rows : rows.filter(function (r) { return r.iso === t; });
+  const kelas = kumpulKelas_(dipilih);
+  const tingkatan = kumpulTingkatan_(kelas, kpi);
+  const hadir = kelas.reduce(function (s, k) { return s + k.hadir; }, 0);
+  const jumlah = kelas.reduce(function (s, k) { return s + k.jumlah; }, 0);
+  const hari = senaraiTarikh_(dipilih);
+  return {
+    kpi: kpi,
+    tarikhSemua: tarikhSemua,
+    kemaskini: tarikhSemua[0] || null,
+    tempoh: t,
+    ringkasan: {
+      hadir: hadir,
+      jumlah: jumlah,
+      peratus: jumlah ? hadir / jumlah : null,
+      bilHari: hari.length,
+      dari: hari[hari.length - 1] || null,
+      hingga: hari[0] || null,
+      bilKelas: kelas.length,
+      bilBawah: kelas.filter(function (k) { return k.peratus < kpi; }).length,
+    },
+    tingkatan: tingkatan,
+    kelas: kelas,
+  };
+}
+
+/** Dipanggil dari App.html. */
+function getAnalisis(tempoh) {
+  const td = tabData_();
+  const d = ringkasAnalisis_(bacaData_(td), tempoh, SASARAN_KPI);
   d.email = Session.getActiveUser().getEmail();
   return d;
 }

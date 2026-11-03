@@ -73,6 +73,29 @@
     .item .pct { font-weight: 700; white-space: nowrap; }
     .kepala-kecil { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
 
+    /* Jadual */
+    .seksyen { margin-bottom: 16px; }
+    .seksyen h3 { margin: 0; font-size: 16px; }
+    .seksyen .sub { color: var(--teks2); font-size: 12px; margin: 4px 0 12px; }
+    .bungkus { overflow-x: auto; }
+    table.jadual { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .jadual th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--teks2); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--garis); white-space: nowrap; }
+    .jadual th.boleh { cursor: pointer; user-select: none; }
+    .jadual th.boleh:hover { color: var(--teks); }
+    .jadual td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
+    .jadual tr:hover td { background: #f8fafc; }
+    .jadual .n { text-align: right; font-variant-numeric: tabular-nums; }
+    .jadual tr.bawah-kpi td:first-child { box-shadow: inset 3px 0 0 var(--amaran-bar); }
+    .bar-mini { position: relative; width: 120px; height: 8px; background: #f1f5f9; border-radius: 4px; display: inline-block; vertical-align: middle; margin-left: 8px; }
+    .bar-mini span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; }
+    .bar-mini i { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--merah); }
+    .cip { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .cip button { border: 1px solid var(--garis); background: #fff; border-radius: 999px; padding: 5px 12px; font-size: 12px; cursor: pointer; color: var(--teks2); }
+    .cip button.aktif { background: var(--utama); border-color: var(--utama); color: #fff; }
+    .kecil-sahaja { display: none; }
+    .ringkas { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: var(--teks2); }
+    .ringkas b { color: var(--teks); font-size: 15px; }
+
     .kosong, .ralat { padding: 40px 20px; text-align: center; color: var(--teks2); }
     .ralat { color: var(--merah); }
     .muat { opacity: .5; pointer-events: none; }
@@ -90,6 +113,10 @@
       .pengguna { display: none; }
       .kpi { gap: 10px; }
       .kpi .nilai { font-size: 24px; }
+      .bar-mini { display: none; }
+      .sk { display: none; }
+      .kecil-sahaja { display: block; font-size: 11px; color: var(--teks2); font-weight: 400; }
+      .jadual td, .jadual th { padding: 8px 6px; }
     }
   </style>
 </head>
@@ -114,8 +141,8 @@
       </div>
       <h4>MENU UTAMA</h4>
       <div class="menu">
-        <a class="aktif">Dashboard Utama</a>
-        <a class="tutup" title="Akan datang">Analisis Kelas <small>akan datang</small></a>
+        <a data-paparan="utama" class="aktif">Dashboard Utama</a>
+        <a data-paparan="analisis">Analisis Kelas</a>
         <a class="tutup" title="Akan datang">Trend Kehadiran <small>akan datang</small></a>
         <a href="<?= urlUpload ?>">Import CSV IDME</a>
       </div>
@@ -124,11 +151,11 @@
     <main class="utama">
       <section class="kad kepala">
         <div>
-          <h2>Dashboard Kehadiran Murid</h2>
-          <p>Ringkasan kehadiran harian mengikut sasaran KPI <span id="kpiTeks">95%</span></p>
+          <h2 id="tajuk">Dashboard Kehadiran Murid</h2>
+          <p id="subtajuk">Ringkasan kehadiran harian mengikut sasaran KPI 95%</p>
         </div>
         <div class="pilih-tarikh">
-          <label for="tarikh">Tarikh rekod</label>
+          <label for="tarikh" id="labelTarikh">Tarikh rekod</label>
           <select id="tarikh"></select>
         </div>
       </section>
@@ -161,31 +188,56 @@
       return e;
     }
 
-    function muat(tarikhIso) {
+    // Paparan semasa dan pilihan tarikh/tempoh bagi setiap paparan.
+    const PAPARAN = {
+      utama: { tajuk: 'Dashboard Kehadiran Murid', label: 'Tarikh rekod', api: 'getDashboard', papar: (d) => papar(d) },
+      analisis: { tajuk: 'Analisis Kelas', label: 'Tempoh', api: 'getAnalisis', papar: (d) => paparAnalisis(d) },
+    };
+    const pilihan = { utama: null, analisis: 'semua' };
+    let paparan = 'utama';
+
+    function tukarPaparan(p) {
+      paparan = p;
+      document.querySelectorAll('.menu a[data-paparan]').forEach((a) => a.classList.toggle('aktif', a.dataset.paparan === p));
+      $('tajuk').textContent = PAPARAN[p].tajuk;
+      $('labelTarikh').textContent = PAPARAN[p].label;
+      muat();
+    }
+
+    function muat() {
+      const p = paparan;
       $('kandungan').classList.add('muat');
       google.script.run
-        .withSuccessHandler(papar)
+        .withSuccessHandler((d) => {
+          if (p !== paparan) return;   // pengguna dah tukar menu
+          $('kandungan').classList.remove('muat');
+          kongsi(d);
+          PAPARAN[p].papar(d);
+        })
         .withFailureHandler((e) => {
           $('kandungan').classList.remove('muat');
           $('kandungan').replaceChildren(el('div', { class: 'kad ralat' }, 'Gagal memuatkan data: ' + (e && e.message ? e.message : e)));
-        })
-        .getDashboard(tarikhIso || null);
+        })[PAPARAN[p].api](pilihan[p]);
     }
 
-    function papar(d) {
-      $('kandungan').classList.remove('muat');
+    // Bahagian yang sama untuk semua paparan: header, status, dropdown.
+    function kongsi(d) {
       $('email').textContent = d.email || '-';
       $('kemaskini').textContent = d.kemaskini ? tarikhPanjang(d.kemaskini) : '-';
       $('bilTarikh').textContent = d.tarikhSemua.length + ' hari data';
-      $('kpiTeks').textContent = pct(d.kpi, 0);
-
-      const sel = $('tarikh');
-      sel.replaceChildren(...d.tarikhSemua.map((iso) => {
-        const o = el('option', { value: iso }, tarikhPanjang(iso));
-        if (iso === d.tarikh) o.selected = true;
+      const dipilih = paparan === 'utama' ? d.tarikh : d.tempoh;
+      pilihan[paparan] = dipilih;
+      const opsyen = d.tarikhSemua.map((iso) => [iso, tarikhPanjang(iso)]);
+      if (paparan === 'analisis') opsyen.unshift(['semua', 'Semua tarikh']);
+      $('tarikh').replaceChildren(...opsyen.map(([v, t]) => {
+        const o = el('option', { value: v }, t);
+        if (v === dipilih) o.selected = true;
         return o;
       }));
+    }
 
+    function papar(d) {
+      $('subtajuk').textContent = 'Ringkasan kehadiran harian mengikut sasaran KPI ' + pct(d.kpi, 0);
       if (!d.tarikh) {
         $('kandungan').replaceChildren(el('div', { class: 'kad kosong' }, 'Belum ada data. Upload CSV melalui menu Import CSV IDME.'));
         return;
@@ -241,6 +293,116 @@
         el('div', { class: 'bawah' }, bawah));
     }
 
+    /* ---------------- Analisis Kelas ---------------- */
+    const susun = { kunci: 'peratus', naik: true };
+    let tapisTingkatan = 'semua';
+
+    function barMini(p, kpi) {
+      const lebar = Math.max(0, Math.min(100, p * 100));
+      return el('span', { class: 'bar-mini' },
+        el('span', { style: `width:${lebar}%;background:${p >= kpi ? 'var(--utama)' : 'var(--amaran-bar)'}` }),
+        el('i', { style: `left:${kpi * 100}%` }));
+    }
+
+    function selPeratus(p, kpi, hadir, jumlah) {
+      return el('td', { class: 'n' },
+        el('b', { class: p >= kpi ? 'hijau' : (p < kpi - 0.1 ? 'merah' : 'jingga') }, pct(p, 2)), barMini(p, kpi),
+        hadir != null ? el('span', { class: 'kecil-sahaja' }, hadir + '/' + jumlah) : null);
+    }
+
+    function paparAnalisis(d) {
+      const r = d.ringkasan;
+      $('subtajuk').textContent = d.tempoh === 'semua'
+        ? 'Purata berwajaran (jumlah hadir / jumlah murid) bagi semua tarikh'
+        : 'Kehadiran pada ' + tarikhPanjang(d.tempoh);
+      if (!r.bilKelas) {
+        $('kandungan').replaceChildren(el('div', { class: 'kad kosong' }, 'Belum ada data. Upload CSV melalui menu Import CSV IDME.'));
+        return;
+      }
+      if (!d.tingkatan.some((t) => t.nama === tapisTingkatan)) tapisTingkatan = 'semua';
+
+      const ringkas = el('section', { class: 'kad seksyen ringkas' },
+        el('div', {}, 'Tempoh', el('br'), el('b', {}, r.bilHari > 1 ? `${tarikhPanjang(r.dari)} – ${tarikhPanjang(r.hingga)}` : tarikhPanjang(r.hingga))),
+        el('div', {}, 'Bilangan hari', el('br'), el('b', {}, r.bilHari)),
+        el('div', {}, 'Kehadiran keseluruhan', el('br'), el('b', { class: r.peratus >= d.kpi ? 'hijau' : 'jingga' }, pct(r.peratus, 2))),
+        el('div', {}, 'Kelas bawah sasaran', el('br'), el('b', {}, r.bilBawah + ' / ' + r.bilKelas)));
+
+      const jT = el('table', { class: 'jadual' },
+        el('thead', {}, el('tr', {}, ['Tingkatan', 'Kelas', 'Hadir', 'Jumlah', 'Peratus', 'Bawah sasaran'].map((h, i) =>
+          el('th', { class: (i >= 1 ? 'n' : '') + (i === 2 || i === 3 || i === 5 ? ' sk' : '') }, h)))),
+        el('tbody', {}, d.tingkatan.map((t) => el('tr', { class: t.peratus < d.kpi ? 'bawah-kpi' : '' },
+          el('td', {}, el('b', {}, t.label), el('span', { class: 'sk', style: 'color:var(--teks2);margin-left:6px;font-size:12px' }, tajukKelas(t.nama))),
+          el('td', { class: 'n' }, t.bilKelas),
+          el('td', { class: 'n sk' }, t.hadir.toLocaleString('ms-MY')),
+          el('td', { class: 'n sk' }, t.jumlah.toLocaleString('ms-MY')),
+          selPeratus(t.peratus, d.kpi, t.hadir, t.jumlah),
+          el('td', { class: 'n sk' }, t.bilBawah ? el('span', { class: 'jingga' }, t.bilBawah + ' kelas') : el('span', { class: 'hijau' }, '–'))))));
+
+      const kadT = el('section', { class: 'kad seksyen' },
+        el('h3', {}, 'Purata per tingkatan'),
+        el('p', { class: 'sub' }, 'Garis merah pada bar = sasaran ' + pct(d.kpi, 0)),
+        el('div', { class: 'bungkus' }, jT));
+
+      const kadK = el('section', { class: 'kad seksyen' });
+      const lukisKelas = () => kadK.replaceChildren(...jadualKelas(d, lukisKelas));
+      lukisKelas();
+
+      $('kandungan').replaceChildren(ringkas, kadT, kadK);
+    }
+
+    function jadualKelas(d, lukisSemula) {
+      const kpi = d.kpi;
+      const banyakHari = d.ringkasan.bilHari > 1;
+      const cip = el('div', { class: 'cip' }, [{ nama: 'semua', label: 'Semua' }, ...d.tingkatan].map((t) => {
+        const b = el('button', { class: t.nama === tapisTingkatan ? 'aktif' : '' }, t.label);
+        b.addEventListener('click', () => { tapisTingkatan = t.nama; lukisSemula(); });
+        return b;
+      }));
+
+      let senarai = d.kelas.filter((k) => tapisTingkatan === 'semua' || k.tingkatan === tapisTingkatan);
+      const nilai = { tingkatan: (k) => d.tingkatan.findIndex((t) => t.nama === k.tingkatan), kelas: (k) => k.kelas,
+        hadir: (k) => k.hadir, jumlah: (k) => k.jumlah, tidak: (k) => k.jumlah - k.hadir, peratus: (k) => k.peratus };
+      senarai = senarai.slice().sort((a, b) => {
+        const x = nilai[susun.kunci](a), y = nilai[susun.kunci](b);
+        const c = typeof x === 'string' ? x.localeCompare(y) : x - y;
+        return susun.naik ? c : -c;
+      });
+
+      const lajur = [['tingkatan', 'Tingkatan', ''], ['kelas', 'Kelas', ''], ['hadir', 'Hadir', 'n sk'],
+        ['jumlah', 'Jumlah', 'n sk'], ['tidak', 'Tak hadir', 'n sk'], ['peratus', 'Peratus', 'n']];
+      const kepala = el('tr', {}, lajur.map(([k, t, c]) => {
+        const anak = susun.kunci === k ? t + (susun.naik ? ' ▲' : ' ▼') : t;
+        const th = el('th', { class: 'boleh ' + c, title: 'Klik untuk susun' }, anak);
+        th.addEventListener('click', () => {
+          susun.naik = susun.kunci === k ? !susun.naik : true;
+          susun.kunci = k;
+          lukisSemula();
+        });
+        return th;
+      }));
+      if (banyakHari) kepala.append(el('th', { class: 'n sk' }, 'Hari'));
+
+      const badan = el('tbody', {}, senarai.map((k) => {
+        const tr = el('tr', { class: k.peratus < kpi ? 'bawah-kpi' : '' },
+          el('td', {}, k.label),
+          el('td', {}, el('b', {}, tajukKelas(k.kelas))),
+          el('td', { class: 'n sk' }, k.hadir),
+          el('td', { class: 'n sk' }, k.jumlah),
+          el('td', { class: 'n sk' }, k.jumlah - k.hadir),
+          selPeratus(k.peratus, kpi, k.hadir, k.jumlah));
+        if (banyakHari) tr.append(el('td', { class: 'n sk' }, k.bilHari));
+        return tr;
+      }));
+
+      const bawah = senarai.filter((k) => k.peratus < kpi).length;
+      return [
+        el('h3', {}, 'Semua kelas'),
+        el('p', { class: 'sub' }, `${senarai.length} kelas dipaparkan, ${bawah} bawah sasaran. Klik tajuk lajur untuk susun.`),
+        cip,
+        el('div', { class: 'bungkus' }, el('table', { class: 'jadual' }, el('thead', {}, kepala), badan)),
+      ];
+    }
+
     // Carta bar menegak dalam SVG. Paksi Y dari (min - 5%) ke 100%.
     function cartaBar(data, kpi) {
       const W = Math.max(320, Math.min(640, $('kandungan').clientWidth - 40)), H = 300, kiri = 36, bawah = 40, atas = 16, kanan = 8;
@@ -269,8 +431,10 @@
       return s;
     }
 
-    $('tarikh').addEventListener('change', (e) => muat(e.target.value));
-    muat(null);
+    $('tarikh').addEventListener('change', (e) => { pilihan[paparan] = e.target.value; muat(); });
+    document.querySelectorAll('.menu a[data-paparan]').forEach((a) =>
+      a.addEventListener('click', () => { if (a.dataset.paparan !== paparan) tukarPaparan(a.dataset.paparan); }));
+    tukarPaparan('utama');
   </script>
 </body>
 </html>
