@@ -7,7 +7,7 @@ const assert = require('assert');
 const kod = fs.readFileSync(path.join(__dirname, '..', 'apps-script', 'Code.gs'), 'utf8');
 const ctx = { Logger: { log: () => {} } };
 vm.createContext(ctx);
-vm.runInContext(kod + '\nthis.parseKehadiran = parseKehadiran; this.testParse = testParse; this.pratonton = ringkasPratonton_;', ctx);
+vm.runInContext(kod + '\nthis.parseKehadiran = parseKehadiran; this.testParse = testParse;', ctx);
 const { parseKehadiran } = ctx;
 
 const HEADER = '\uFEFFBil.,Tahun/Tingkatan,Kelas,Kehadiran,Jumlah Pelajar';
@@ -101,17 +101,6 @@ uji('tarikh yang tak masuk akal tetap ditolak', () => {
   assert.strictEqual(h.rows.length, 0);
   assert.strictEqual(h.gagal.length, 3);
   assert.strictEqual(h.pembetulan.length, 0);
-});
-
-uji('ringkasPratonton_ tanda baris dibetulkan dan kira jumlah', () => {
-  const h = ctx.pratonton(parseKehadiran(csv([
-    '1,TINGKATAN TIGA,EHSAN,Kehadiran,18-Dec',
-    '2,TINGKATAN TIGA,AMANAH,Kehadiran,24/28',
-  ])));
-  assert.strictEqual(h.rows.length, 2);
-  assert.strictEqual(h.rows[0].asal, '18-Dec');
-  assert.strictEqual(h.rows[1].asal, null);
-  assert.strictEqual(`${h.ringkasan.hadir}/${h.ringkasan.jumlah}/${h.ringkasan.bilKelas}`, '36/46/2');
 });
 
 // Fail sebenar tak disimpan dalam repo (repo public). Uji jika diberi:

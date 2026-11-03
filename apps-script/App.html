@@ -485,7 +485,7 @@
       awan: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.5A3.8 3.8 0 0 1 17.5 18"/><path d="M12 12v8"/><path d="M8.5 15.5 12 12l3.5 3.5"/></svg>`,
       muatTurun: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 20h14"/></svg>`,
       info: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>`,
-      semak: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><circle cx="11.5" cy="14" r="2.5"/><path d="m13.5 16 2 2"/></svg>`,
+      hantar: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10 14"/><path d="M21 3l-7 18-4-7-7-4z"/></svg>`,
       simpan: `<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17 19 7.5"/></svg>`,
     };
     const ikon = (n) => { const t = document.createElement('template'); t.innerHTML = IKON[n]; return t.content.firstChild; };
@@ -529,18 +529,18 @@
         el('div', {}, el('b', {}, 'Format IDME MOEIS yang disokong:'),
           'Sistem membaca format pecahan ', el('code', {}, 'Hadir / Jumlah Pelajar'), ' contohnya ', el('b', { style: 'display:inline' }, '22/23'),
           ' atau ', el('b', { style: 'display:inline' }, '25/25'), ', dan mengesan nilai yang ditukar oleh Excel menjadi tarikh (contoh ',
-          el('i', {}, '9-Sep'), '). Nilai itu dibetulkan dan dipaparkan untuk semakan sebelum disimpan.')));
+          el('i', {}, '9-Sep'), '). Nilai itu dibetulkan dan perlu disahkan sebelum disimpan.')));
 
-      const semak = el('button', { class: 'butang-utama', type: 'button' }, ikon('semak'), imp.sibuk === 'semak' ? 'Menyemak...' : 'Semak & Pratonton Data CSV');
-      semak.disabled = !imp.teks || !imp.tarikh || !!imp.sibuk;
-      semak.addEventListener('click', semakImport);
-      kad.append(semak);
+      const hantar = el('button', { class: 'butang-utama', type: 'button' }, ikon('hantar'), imp.sibuk ? 'Menghantar...' : 'Hantar');
+      hantar.disabled = !imp.teks || !imp.tarikh || !!imp.sibuk || !!imp.hasil;
+      hantar.addEventListener('click', hantarImport);
+      kad.append(hantar);
 
       const bahagian = [];
       if (imp.notis) bahagian.push(el('div', { class: 'notis ' + (imp.notis.ok ? 'ok' : 'ralat') }, imp.notis.mesej,
         imp.notis.ok ? lihatDashboard(imp.notis.tarikh) : null));
       bahagian.push(kad);
-      if (imp.hasil) bahagian.push(...pratonton(imp.hasil));
+      if (imp.hasil) bahagian.push(...keputusanHantar(imp.hasil));
       $('kandungan').replaceChildren(...bahagian);
     }
 
@@ -550,72 +550,58 @@
       return a;
     }
 
-    function semakImport() {
-      imp.sibuk = 'semak'; imp.notis = null; imp.hasil = null; paparImport();
-      panggil('semakUpload', [imp.tarikh, imp.teks],
-        (h) => { imp.sibuk = false; if (h.ralat) imp.notis = { ok: false, mesej: h.ralat }; else imp.hasil = h; paparImport(); },
-        (e) => { imp.sibuk = false; imp.notis = { ok: false, mesej: 'Ralat: ' + teksRalat(e) }; paparImport(); });
+    // Hantar terus. Pelayan pulang perluSahkan jika ada nilai yang dibetulkan dari format tarikh Excel.
+    function hantarImport() {
+      const tarikh = imp.tarikh;
+      if (!confirm('Simpan data kehadiran untuk ' + tarikhPanjang(tarikh) + '?\nFail: ' + (imp.fail ? imp.fail.name : ''))) return;
+      hantarKePelayan(false);
     }
 
-    function simpanImport() {
-      imp.sibuk = 'simpan'; paparImport();
+    function hantarKePelayan(sahkan) {
       const tarikh = imp.tarikh;
-      panggil('prosesUpload', [tarikh, imp.teks, true],
+      imp.sibuk = true; imp.notis = null; paparImport();
+      panggil('prosesUpload', [tarikh, imp.teks, sahkan],
         (h) => {
           imp.sibuk = false;
-          if (h.ok) { imp = { tarikh: null, fail: null, teks: null, hasil: null, notis: { ok: true, mesej: h.mesej, tarikh }, sibuk: false }; }
-          else { imp.notis = { ok: false, mesej: h.mesej }; imp.hasil = null; }
+          if (h.ok) imp = { tarikh: null, fail: null, teks: null, hasil: null, notis: { ok: true, mesej: h.mesej, tarikh }, sibuk: false };
+          else if (h.perluSahkan || (h.gagal && h.gagal.length)) imp.hasil = h;
+          else { imp.hasil = null; imp.notis = { ok: false, mesej: h.mesej }; }
           paparImport();
         },
-        (e) => { imp.sibuk = false; imp.notis = { ok: false, mesej: 'Ralat: ' + teksRalat(e) }; paparImport(); });
+        (e) => { imp.sibuk = false; imp.hasil = null; imp.notis = { ok: false, mesej: 'Ralat: ' + teksRalat(e) }; paparImport(); });
     }
 
-    function pratonton(h) {
-      const out = [];
-      const r = h.ringkasan;
-      const bolehSimpan = !h.gagal.length && !h.ralatTarikh && r && r.bilKelas > 0;
+    function batalImport() { imp.hasil = null; imp.notis = null; paparImport(); }
 
-      if (h.gagal.length) {
-        out.push(el('section', { class: 'kad seksyen' },
-          el('div', { class: 'notis ralat', style: 'margin-bottom:12px' }, h.gagal.length + ' baris tidak dapat dibaca. Fail ini tidak boleh disimpan. Semak fail CSV dan cuba lagi.'),
+    function keputusanHantar(h) {
+      if (h.gagal && h.gagal.length) {
+        const tutup = el('button', { class: 'butang', type: 'button' }, 'Tutup');
+        tutup.addEventListener('click', batalImport);
+        return [el('section', { class: 'kad seksyen' },
+          el('div', { class: 'notis ralat', style: 'margin-bottom:12px' }, h.mesej + ' Semak fail CSV dan cuba lagi.'),
           el('div', { class: 'bungkus' }, el('table', { class: 'jadual' },
             el('thead', {}, el('tr', {}, el('th', {}, 'Baris'), el('th', {}, 'Kandungan'), el('th', {}, 'Sebab'))),
             el('tbody', {}, h.gagal.map((g) => el('tr', {}, el('td', {}, g.baris),
-              el('td', { style: 'white-space:normal' }, g.kandungan), el('td', { style: 'white-space:normal' }, g.sebab))))))));
-        return out;
+              el('td', { style: 'white-space:normal' }, g.kandungan), el('td', { style: 'white-space:normal' }, g.sebab)))))),
+          el('div', { class: 'baris-butang' }, tutup))];
       }
-
-      const kad = el('section', { class: 'kad seksyen' });
-      kad.append(el('h3', {}, 'Pratonton data'),
-        el('p', { class: 'sub' }, 'Belum disimpan. Semak sebelum tekan Simpan.'));
-      kad.append(el('div', { class: 'ringkas', style: 'margin-bottom:14px' },
-        el('div', {}, 'Tarikh', el('br'), el('b', {}, tarikhPanjang(imp.tarikh))),
-        el('div', {}, 'Bilangan kelas', el('br'), el('b', {}, r.bilKelas)),
-        el('div', {}, 'Hadir / Jumlah', el('br'), el('b', {}, r.hadir + ' / ' + r.jumlah)),
-        el('div', {}, 'Kehadiran', el('br'), el('b', { class: r.peratus >= 0.95 ? 'hijau' : 'jingga' }, pct(r.peratus, 2)))));
-      if (h.ralatTarikh) kad.append(el('div', { class: 'notis ralat' }, h.ralatTarikh));
-      if (h.pembetulan.length) kad.append(el('div', { class: 'notis info' },
-        h.pembetulan.length + ' nilai telah ditukar oleh Excel menjadi tarikh dan dibetulkan secara automatik (bulan = hadir, hari = jumlah). Baris berlatar kuning di bawah. Pastikan nilainya betul.'));
-
-      kad.append(el('div', { class: 'bungkus' }, el('table', { class: 'jadual' },
-        el('thead', {}, el('tr', {}, el('th', {}, 'Tingkatan'), el('th', {}, 'Kelas'), el('th', { class: 'n' }, 'Hadir'),
-          el('th', { class: 'n' }, 'Jumlah'), el('th', { class: 'n' }, 'Peratus'))),
-        el('tbody', {}, h.rows.map((x) => el('tr', { class: x.asal ? 'dibetulkan' : '' },
-          el('td', {}, tajukKelas(x.tingkatan)),
-          el('td', {}, el('b', {}, tajukKelas(x.kelas)), x.asal ? el('span', { class: 'tag-betul' }, 'dalam fail: ' + x.asal) : null),
-          el('td', { class: 'n' }, x.hadir), el('td', { class: 'n' }, x.jumlah),
-          el('td', { class: 'n' }, el('b', { class: x.peratus >= 0.95 ? 'hijau' : (x.peratus < 0.85 ? 'merah' : 'jingga') }, pct(x.peratus, 2)))))))));
-
-      const simpan = el('button', { class: 'butang-utama', type: 'button' }, ikon('simpan'),
-        imp.sibuk === 'simpan' ? 'Menyimpan...' : 'Simpan ' + r.bilKelas + ' kelas untuk ' + tarikhPanjang(imp.tarikh));
-      simpan.disabled = !bolehSimpan || !!imp.sibuk;
-      simpan.addEventListener('click', simpanImport);
+      // perluSahkan: senarai pembetulan + Sahkan & Simpan
+      const sah = el('button', { class: 'butang-utama', type: 'button' }, ikon('simpan'), imp.sibuk ? 'Menyimpan...' : 'Sahkan & Simpan');
+      sah.disabled = !!imp.sibuk;
+      sah.addEventListener('click', () => hantarKePelayan(true));
       const batal = el('button', { class: 'butang', type: 'button' }, 'Batal');
       batal.disabled = !!imp.sibuk;
-      batal.addEventListener('click', () => { imp.hasil = null; paparImport(); });
-      kad.append(el('div', { class: 'baris-butang' }, simpan, batal));
-      out.push(kad);
-      return out;
+      batal.addEventListener('click', batalImport);
+      return [el('section', { class: 'kad seksyen' },
+        el('h3', {}, 'Sahkan pembetulan'),
+        el('p', { class: 'sub' }, 'Belum ada data disimpan untuk ' + tarikhPanjang(imp.tarikh) + '.'),
+        el('div', { class: 'notis info' }, h.mesej + ' Bulan = hadir, hari = jumlah.'),
+        el('div', { class: 'bungkus' }, el('table', { class: 'jadual' },
+          el('thead', {}, el('tr', {}, el('th', {}, 'Tingkatan'), el('th', {}, 'Kelas'), el('th', {}, 'Dalam fail'), el('th', { class: 'n' }, 'Disimpan sebagai'))),
+          el('tbody', {}, h.pembetulan.map((x) => el('tr', { class: 'dibetulkan' },
+            el('td', {}, tajukKelas(x.tingkatan)), el('td', {}, el('b', {}, tajukKelas(x.kelas))),
+            el('td', {}, x.asal), el('td', { class: 'n' }, el('b', {}, x.baru))))))),
+        el('div', { class: 'baris-butang' }, sah, batal))];
     }
 
     // Template: header IDME + contoh baris, termasuk baris kosong ",,,," seperti fail sebenar.
