@@ -22,6 +22,7 @@ const SAIZ_CSV_MAKS = 1024 * 1024; // 1 MB, jauh melebihi saiz fail sebenar (~3 
  * Selamat dijalankan lebih dari sekali, tapi tak perlu selepas data masuk.
  */
 function setupSistem() {
+  semakAkses_(true);
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let data = ss.getSheetByName(TAB_DATA);
 
@@ -229,7 +230,7 @@ function semakTarikhBaru_(sheet, tz, tarikhIso) {
  * Lajur F tidak ditulis (diisi oleh ARRAYFORMULA di F2).
  * @return {number} bilangan baris ditulis
  */
-function simpanKehadiran(tarikhIso, rows) {
+function simpanKehadiran_(tarikhIso, rows) {
   const td = tabData_();
   const sheet = td.sheet;
   const tz = td.tz;
@@ -270,6 +271,7 @@ function simpanKehadiran(tarikhIso, rows) {
  */
 function prosesUpload(tarikhIso, csvText, sahkan) {
   try {
+    semakAkses_(true);
     if (typeof csvText !== 'string') throw new Error('Kandungan fail tidak diterima.');
     if (csvText.length > SAIZ_CSV_MAKS) throw new Error('Fail terlalu besar (had 1 MB).');
 
@@ -298,7 +300,7 @@ function prosesUpload(tarikhIso, csvText, sahkan) {
       };
     }
 
-    const n = simpanKehadiran(tarikhIso, hasil.rows);
+    const n = simpanKehadiran_(tarikhIso, hasil.rows);
     const jumHadir = hasil.rows.reduce(function (s, r) { return s + r.hadir; }, 0);
     const jumMurid = hasil.rows.reduce(function (s, r) { return s + r.jumlah; }, 0);
     const [y, m, d] = tarikhIso.split('-');
@@ -316,9 +318,29 @@ function prosesUpload(tarikhIso, csvText, sahkan) {
   }
 }
 
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('Upload Kehadiran')
+/**
+ * URL tanpa parameter -> dashboard (App.html).
+ * ?p=upload            -> borang upload (Index.html).
+ */
+function doGet(e) {
+  const p = e && e.parameter ? e.parameter.p : '';
+  const a = aksesSemasa_();
+  if (!a.peranan) {
+    return halamanDitolak_(a.emel, a.emel
+      ? 'Akaun anda tiada dalam senarai pengguna sistem ini.'
+      : 'Google tidak memberikan emel anda. Pastikan anda log masuk dengan akaun DELIMa sekolah.');
+  }
+  if (p === 'upload') {
+    if (a.peranan !== 'admin') return halamanDitolak_(a.emel, 'Import CSV untuk admin sahaja.');
+    return HtmlService.createHtmlOutputFromFile('Index')
+      .setTitle('Upload Kehadiran')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
+  const t = HtmlService.createTemplateFromFile('App');
+  t.urlUpload = ScriptApp.getService().getUrl() + '?p=upload';
+  t.peranan = a.peranan;
+  return t.evaluate()
+    .setTitle('SEMARAK HEM - Dashboard Kehadiran')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 

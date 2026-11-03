@@ -6,17 +6,20 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 
 | Fail | Isi |
 |---|---|
-| `apps-script/Code.gs` | `setupSistem`, `parseKehadiran`, `simpanKehadiran`, `prosesUpload`, `doGet`, `testParse` |
+| `apps-script/Code.gs` | `setupSistem`, `parseKehadiran`, `simpanKehadiran_`, `prosesUpload`, `doGet`, `testParse` |
+| `apps-script/Api.gs` | `getDashboard`, `getAnalisis`, `getTrend` — data untuk web app (sasaran KPI 95%) |
+| `apps-script/App.html` | Web app (URL utama): Dashboard Utama, Analisis Kelas, Trend Kehadiran. Upload di `?p=upload` |
 | `apps-script/Dashboard.gs` | `binaDashboard` — bina tab Dashboard, Analisis, Trend |
+| `apps-script/Akses.gs`, `apps-script/Ditolak.html` | Kawalan akses: tab **Pengguna** (admin / lihat), halaman akses ditolak |
 | `apps-script/Padam.gs` | Menu **Kehadiran > Padam data satu tarikh** dalam Sheet |
 | `apps-script/Index.html` | Borang upload (tarikh + fail CSV) |
 | `apps-script/appsscript.json` | Zon masa `Asia/Kuala_Lumpur`, web app "Me" / "Only myself" |
-| `test/parse.test.js`, `test/padam.test.js` | Ujian di luar Apps Script: `node test/parse.test.js` |
+| `test/*.test.js` | Ujian di luar Apps Script: `node test/parse.test.js` |
 
 ## Pasang
 
 1. Buka Sheet `Dashboard Kehadiran` > **Extensions > Apps Script**.
-2. Salin `Code.gs`, `Dashboard.gs`, `Index.html` (nama fail HTML mesti `Index`).
+2. Salin semua fail dalam `apps-script/` (nama fail HTML mesti `Index` dan `App`).
 3. **Project Settings** > tanda *Show "appsscript.json"* > salin isi `appsscript.json`.
 4. **File > Settings** dalam Sheet: pastikan zon masa `(GMT+08:00) Kuala Lumpur`.
 
@@ -37,6 +40,17 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 - Jika satu baris CSV gagal, seluruh upload dibatalkan dan baris bermasalah dipaparkan.
 - Jika fail pernah dibuka dalam Excel, nilai seperti `12/18` jadi `18-Dec`. Sistem baca semula sebagai hadir 12 / jumlah 18 (bulan = hadir, hari = jumlah), paparkan senarai pembetulan, dan hanya simpan selepas pengguna tekan **Sahkan & Simpan**.
 - Tarikh akan datang ditolak.
-- Data tersalah tarikh dipadam melalui menu **Kehadiran > Padam data satu tarikh**. Jangan padam seluruh baris secara manual (formula peratus di F2 akan hilang).
+- Data tersalah tarikh dipadam melalui web app (**Pentadbir > Padam Data**, admin sahaja, perlu taip tarikh untuk sahkan) atau menu Sheet **Kehadiran > Padam data satu tarikh**. Jangan padam seluruh baris secara manual (formula peratus di F2 akan hilang).
 - Kelas dikenal pasti dengan gabungan Tingkatan + Kelas.
 - Peratus dalam Analisis dan Trend ialah purata berwajaran (jumlah hadir / jumlah murid), bukan purata peratus kelas.
+
+## Akses pengguna
+
+- Pemilik script (akaun yang deploy) sentiasa **admin**.
+- Pengguna lain disenaraikan dalam tab **Pengguna** (jalankan `setupPengguna` sekali): lajur A emel, lajur B peranan.
+  - `admin`: semua menu termasuk Import CSV dan Padam Data.
+  - `lihat`: Dashboard, Analisis, Trend sahaja.
+- Orang yang tiada dalam senarai nampak halaman "Akses ditolak".
+- Deploy: **Execute as: Me**, **Who has access: Anyone within moe-dl.edu.my**. Jangan kongsi fail Sheet kepada pengguna `lihat`; mereka tak perlukannya.
+- Semua fungsi pelayan yang boleh dipanggil dari browser menyemak akses di pelayan (`semakAkses_`), bukan hanya sorok menu.
+

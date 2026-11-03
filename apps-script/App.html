@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <title>SEMARAK HEM</title>
+  <style>
+    :root {
+      --bg: #f1f5f9; --kad: #ffffff; --garis: #e2e8f0; --teks: #0f172a; --teks2: #64748b;
+      --utama: #0f766e; --utama-lembut: #ccfbf1; --amaran: #d97706; --amaran-bar: #eab308;
+      --amaran-lembut: #fef3c7; --merah: #dc2626; --merah-lembut: #fee2e2;
+      --sisi: #0f172a; --sisi-teks: #cbd5e1; --sisi-aktif: #0f766e;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: var(--teks); font-size: 14px; }
+    button, select { font: inherit; }
+
+    /* Header */
+    .atas { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 24px; background: var(--kad); border-bottom: 1px solid var(--garis); }
+    .jenama { display: flex; align-items: center; gap: 12px; }
+    .logo { width: 40px; height: 40px; border-radius: 10px; background: var(--utama); color: #fff; font-weight: 700; font-size: 18px; display: grid; place-items: center; }
+    .jenama h1 { margin: 0; font-size: 18px; }
+    .jenama p { margin: 2px 0 0; color: var(--teks2); font-size: 12px; }
+    .pengguna { text-align: right; font-size: 13px; }
+    .pengguna small { display: block; color: var(--teks2); margin-top: 2px; }
+
+    /* Layout */
+    .rangka { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 69px); }
+    .sisi { background: var(--sisi); color: var(--sisi-teks); padding: 16px 12px; }
+    .status { border: 1px solid #334155; border-radius: 10px; padding: 12px; font-size: 12px; margin-bottom: 20px; }
+    .status b { color: #fff; display: block; margin: 4px 0; }
+    .status .titik { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; margin-right: 6px; }
+    .sisi h4 { font-size: 11px; letter-spacing: .08em; color: #94a3b8; margin: 0 8px 8px; }
+    .menu { display: flex; flex-direction: column; gap: 4px; }
+    .menu a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: var(--sisi-teks); text-decoration: none; cursor: pointer; }
+    .menu a:hover { background: #1e293b; }
+    .menu a.aktif { background: var(--sisi-aktif); color: #fff; font-weight: 600; }
+    .menu a.tutup { opacity: .45; cursor: default; }
+    .menu a.tutup:hover { background: none; }
+    .ikon { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .h4-admin { margin-top: 20px !important; }
+    .lencana-peranan { display: inline-block; margin-top: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--utama-lembut); color: var(--utama); }
+
+    .utama { padding: 24px; min-width: 0; }
+    .kad { background: var(--kad); border: 1px solid var(--garis); border-radius: 12px; padding: 18px 20px; }
+    .kepala { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+    .kepala h2 { margin: 0; font-size: 20px; }
+    .kepala p { margin: 4px 0 0; color: var(--teks2); font-size: 13px; }
+    .pilih-tarikh label { color: var(--teks2); font-size: 13px; margin-right: 8px; }
+    .pilih-tarikh select { padding: 8px 12px; border: 1px solid var(--garis); border-radius: 8px; background: #fff; min-width: 150px; }
+
+    /* KPI */
+    .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+    .kpi .label { font-size: 11px; letter-spacing: .06em; color: var(--teks2); font-weight: 600; text-transform: uppercase; }
+    .kpi .nilai { font-size: 30px; font-weight: 700; margin: 10px 0 6px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .kpi .nilai span.kecil { font-size: 15px; color: var(--teks2); font-weight: 500; }
+    .kpi .bawah { font-size: 12px; color: var(--teks2); }
+    .lencana { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
+    .lencana.ok { background: var(--utama-lembut); color: var(--utama); }
+    .lencana.bawah { background: var(--amaran-lembut); color: var(--amaran); }
+    .hijau { color: var(--utama); } .merah { color: var(--merah); } .jingga { color: var(--amaran); }
+
+    /* Baris kedua */
+    .dua { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+    .dua h3 { margin: 0; font-size: 16px; }
+    .dua .sub { color: var(--teks2); font-size: 12px; margin: 4px 0 12px; }
+    .legenda { display: flex; gap: 14px; font-size: 12px; color: var(--teks2); margin-bottom: 4px; flex-wrap: wrap; }
+    .legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+    svg text { font-family: inherit; }
+
+    .senarai { max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+    .item { border: 1px solid var(--garis); border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; gap: 8px; }
+    .item b { font-size: 13px; }
+    .item small { display: block; color: var(--teks2); font-size: 12px; margin-top: 2px; }
+    .item .pct { font-weight: 700; white-space: nowrap; }
+    .kepala-kecil { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+
+    /* Jadual */
+    .seksyen { margin-bottom: 16px; }
+    .seksyen h3 { margin: 0; font-size: 16px; }
+    .seksyen .sub { color: var(--teks2); font-size: 12px; margin: 4px 0 12px; }
+    .bungkus { overflow-x: auto; }
+    table.jadual { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .jadual th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--teks2); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--garis); white-space: nowrap; }
+    .jadual th.boleh { cursor: pointer; user-select: none; }
+    .jadual th.boleh:hover { color: var(--teks); }
+    .jadual td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
+    .jadual tr:hover td { background: #f8fafc; }
+    .jadual .n { text-align: right; font-variant-numeric: tabular-nums; }
+    .jadual tr.bawah-kpi td:first-child { box-shadow: inset 3px 0 0 var(--amaran-bar); }
+    .bar-mini { position: relative; width: 120px; height: 8px; background: #f1f5f9; border-radius: 4px; display: inline-block; vertical-align: middle; margin-left: 8px; }
+    .bar-mini span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; }
+    .bar-mini i { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--merah); }
+    .cip { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .cip button { border: 1px solid var(--garis); background: #fff; border-radius: 999px; padding: 5px 12px; font-size: 12px; cursor: pointer; color: var(--teks2); }
+    .cip button.aktif { background: var(--utama); border-color: var(--utama); color: #fff; }
+    .kecil-sahaja { display: none; }
+    .pilih-trend { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .pilih-trend select { padding: 7px 10px; border: 1px solid var(--garis); border-radius: 8px; background: #fff; max-width: 100%; }
+    .butang { border: 1px solid var(--garis); background: #fff; border-radius: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+    .butang:hover { background: #f8fafc; }
+    .butang.bahaya { border-color: #fecaca; color: var(--merah); }
+    .butang.bahaya:hover { background: var(--merah-lembut); }
+    .butang.bahaya-penuh { background: var(--merah); border-color: var(--merah); color: #fff; }
+    .butang:disabled { opacity: .45; cursor: default; }
+    .notis { padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; }
+    .notis.ok { background: var(--utama-lembut); color: #115e59; }
+    .notis.ralat { background: var(--merah-lembut); color: #991b1b; }
+    .notis.info { background: var(--amaran-lembut); color: #92400e; }
+    .sahkan { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .sahkan input { padding: 6px 10px; border: 1px solid var(--garis); border-radius: 8px; width: 120px; font: inherit; }
+    .naik { color: var(--utama); } .turun { color: var(--merah); }
+    .ringkas { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: var(--teks2); }
+    .ringkas b { color: var(--teks); font-size: 15px; }
+
+    .kosong, .ralat { padding: 40px 20px; text-align: center; color: var(--teks2); }
+    .ralat { color: var(--merah); }
+    .muat { opacity: .5; pointer-events: none; }
+    .tersembunyi { display: none !important; }
+
+    @media (max-width: 1100px) { .kpi { grid-template-columns: repeat(2, 1fr); } .dua { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) {
+      .rangka { grid-template-columns: minmax(0, 1fr); align-content: start; min-height: 0; }
+      .sisi { padding: 8px 12px; min-width: 0; }
+      .status, .sisi h4 { display: none !important; }
+      .menu { flex-direction: row; overflow-x: auto; }
+      .menu a { white-space: nowrap; }
+      .utama { padding: 16px; }
+      .atas { padding: 12px 16px; }
+      .pengguna { display: none; }
+      .kpi { gap: 10px; }
+      .kpi .nilai { font-size: 24px; }
+      .bar-mini { display: none; }
+      .sk { display: none; }
+      .kecil-sahaja { display: block; font-size: 11px; color: var(--teks2); font-weight: 400; }
+      .jadual td, .jadual th { padding: 8px 6px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="atas">
+    <div class="jenama">
+      <div class="logo">S</div>
+      <div>
+        <h1>SEMARAK HEM</h1>
+        <p>Sistem Analisis Kehadiran Murid</p>
+      </div>
+    </div>
+    <div class="pengguna"><span id="email">-</span><br><span class="lencana-peranan"><?= peranan === 'admin' ? 'ADMIN (SU HEM)' : 'PAPARAN SAHAJA' ?></span><small>Data terkini: <span id="kemaskini">-</span></small></div>
+  </header>
+
+  <div class="rangka">
+    <nav class="sisi">
+      <div class="status">
+        Status Pangkalan Data:
+        <b><span class="titik"></span>Google Sheets</b>
+        <span id="bilTarikh">-</span>
+      </div>
+      <h4>MENU UTAMA</h4>
+      <div class="menu">
+        <a data-paparan="utama" class="aktif"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard Utama</span></a>
+        <a data-paparan="analisis"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14.8c2 .7 3.2 2.4 3.6 5.2"/></svg><span>Analisis Kelas</span></a>
+        <a data-paparan="trend"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span>Trend Kehadiran</span></a>
+<? if (peranan === 'admin') { ?>
+        <h4 class="h4-admin">PENTADBIR (ADMIN)</h4>
+        <a href="<?= urlUpload ?>"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.5A3.8 3.8 0 0 1 17.5 18"/><path d="M12 12v8"/><path d="M8.5 15.5 12 12l3.5 3.5"/></svg><span>Import CSV IDME</span></a>
+        <a data-paparan="padam"><svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg><span>Padam Data</span></a>
+<? } ?>
+      </div>
+    </nav>
+
+    <main class="utama">
+      <section class="kad kepala">
+        <div>
+          <h2 id="tajuk">Dashboard Kehadiran Murid</h2>
+          <p id="subtajuk">Ringkasan kehadiran harian mengikut sasaran KPI 95%</p>
+        </div>
+        <div class="pilih-tarikh">
+          <label for="tarikh" id="labelTarikh">Tarikh rekod</label>
+          <select id="tarikh"></select>
+        </div>
+      </section>
+
+      <div id="kandungan">
+        <div class="kad kosong">Memuatkan data...</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const pct = (x, dp = 1) => (x == null ? '-' : (100 * x).toFixed(dp) + '%');
+    const tarikhMs = (iso) => iso ? iso.split('-').reverse().join('/') : '-';
+    const BULAN = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'];
+    const tarikhPanjang = (iso) => { const [y, m, d] = iso.split('-'); return +d + ' ' + BULAN[+m - 1] + ' ' + y; };
+    const tajukKelas = (s) => String(s).replace(/\b([A-Z])([A-Z]+)\b/g, (_, a, b) => a + b.toLowerCase());
+
+    // Bina elemen dengan textContent sahaja (elak XSS).
+    function el(tag, attr, ...anak) {
+      const e = document.createElement(tag);
+      Object.entries(attr || {}).forEach(([k, v]) => (k === 'class' ? (e.className = v) : e.setAttribute(k, v)));
+      anak.flat().forEach((a) => a != null && e.append(a instanceof Node ? a : String(a)));
+      return e;
+    }
+    function svg(tag, attr, teks) {
+      const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      Object.entries(attr || {}).forEach(([k, v]) => e.setAttribute(k, v));
+      if (teks != null) e.textContent = teks;
+      return e;
+    }
+
+    // Paparan semasa dan pilihan tarikh/tempoh bagi setiap paparan.
+    const PAPARAN = {
+      utama: { tajuk: 'Dashboard Kehadiran Murid', label: 'Tarikh rekod', api: 'getDashboard', papar: (d) => papar(d) },
+      analisis: { tajuk: 'Analisis Kelas', label: 'Tempoh', api: 'getAnalisis', papar: (d) => paparAnalisis(d) },
+      trend: { tajuk: 'Trend Kehadiran', label: 'Julat', api: 'getTrend', papar: (d) => paparTrend(d) },
+      padam: { tajuk: 'Padam Data', label: '', api: 'getSenaraiPadam', papar: (d) => paparPadam(d), tanpaPilihan: true },
+    };
+    let notisPadam = null;
+    const pilihan = { utama: null, analisis: 'semua', trend: '30' };
+    let pilihTrend = '';
+    const hujah = (p) => (p === 'trend' ? [pilihan.trend, pilihTrend] : p === 'padam' ? [] : [pilihan[p]]);
+    let paparan = 'utama';
+
+    function tukarPaparan(p) {
+      paparan = p;
+      document.querySelectorAll('.menu a[data-paparan]').forEach((a) => a.classList.toggle('aktif', a.dataset.paparan === p));
+      $('tajuk').textContent = PAPARAN[p].tajuk;
+      $('labelTarikh').textContent = PAPARAN[p].label;
+      document.querySelector('.pilih-tarikh').classList.toggle('tersembunyi', !!PAPARAN[p].tanpaPilihan);
+      if (p !== 'padam') notisPadam = null;
+      muat();
+    }
+
+    function muat() {
+      const p = paparan;
+      $('kandungan').classList.add('muat');
+      google.script.run
+        .withSuccessHandler((d) => {
+          if (p !== paparan) return;   // pengguna dah tukar menu
+          $('kandungan').classList.remove('muat');
+          kongsi(d);
+          PAPARAN[p].papar(d);
+        })
+        .withFailureHandler((e) => {
+          $('kandungan').classList.remove('muat');
+          $('kandungan').replaceChildren(el('div', { class: 'kad ralat' }, 'Gagal memuatkan data: ' + (e && e.message ? e.message : e)));
+        })[PAPARAN[p].api](...hujah(p));
+    }
+
+    // Bahagian yang sama untuk semua paparan: header, status, dropdown.
+    function kongsi(d) {
+      $('email').textContent = d.email || '-';
+      $('kemaskini').textContent = d.kemaskini ? tarikhPanjang(d.kemaskini) : '-';
+      $('bilTarikh').textContent = d.tarikhSemua.length + ' hari data';
+      if (PAPARAN[paparan].tanpaPilihan) return;
+      const dipilih = paparan === 'utama' ? d.tarikh : paparan === 'analisis' ? d.tempoh : d.julat;
+      pilihan[paparan] = dipilih;
+      let opsyen = d.tarikhSemua.map((iso) => [iso, tarikhPanjang(iso)]);
+      if (paparan === 'analisis') opsyen.unshift(['semua', 'Semua tarikh']);
+      if (paparan === 'trend') opsyen = [['7', '7 hari data terakhir'], ['30', '30 hari data terakhir'], ['semua', 'Semua tarikh']];
+      $('tarikh').replaceChildren(...opsyen.map(([v, t]) => {
+        const o = el('option', { value: v }, t);
+        if (v === dipilih) o.selected = true;
+        return o;
+      }));
+    }
+
+    function papar(d) {
+      $('subtajuk').textContent = 'Ringkasan kehadiran harian mengikut sasaran KPI ' + pct(d.kpi, 0);
+      if (!d.tarikh) {
+        $('kandungan').replaceChildren(el('div', { class: 'kad kosong' }, 'Belum ada data. Upload CSV melalui menu Import CSV IDME.'));
+        return;
+      }
+
+      const r = d.ringkasan;
+      const capaiSekolah = r.peratus >= d.kpi;
+      const kpi = el('section', { class: 'kpi' },
+        kadKpi('Peratus kehadiran',
+          [pct(r.peratus, 2), el('span', { class: 'lencana ' + (capaiSekolah ? 'ok' : 'bawah') }, capaiSekolah ? 'Capai sasaran' : 'Bawah sasaran')],
+          ['Sasaran sekolah: ', el('b', {}, pct(d.kpi, 1))]),
+        kadKpi('Murid hadir / enrolmen',
+          [r.hadir + ' / ' + r.jumlah],
+          ['Tidak hadir: ', el('b', { class: 'merah' }, r.tidakHadir), ' orang']),
+        kadKpi('Kelas mencapai KPI',
+          [el('span', { class: 'hijau' }, r.kelasCapai), el('span', { class: 'kecil' }, '/ ' + r.bilKelas + ' kelas')],
+          ['Belum mencapai: ', el('b', { class: 'jingga' }, r.kelasBelum), ' kelas']),
+        kadKpi('Jumlah tingkatan',
+          [r.bilTingkatan, el('span', { class: 'kecil' }, 'kumpulan')],
+          [d.tingkatan.map((t) => t.label).join(', ')])
+      );
+
+      const carta = el('section', { class: 'kad' },
+        el('h3', {}, 'Kehadiran mengikut tingkatan'),
+        el('p', { class: 'sub' }, 'Peratus = jumlah hadir / jumlah murid bagi setiap tingkatan pada ' + tarikhPanjang(d.tarikh)),
+        el('div', { class: 'legenda' },
+          el('span', {}, el('i', { style: 'background:var(--utama)' }), 'Capai sasaran'),
+          el('span', {}, el('i', { style: 'background:var(--amaran-bar)' }), 'Bawah sasaran'),
+          el('span', {}, el('i', { style: 'background:var(--merah);height:2px' }), 'Sasaran ' + pct(d.kpi, 0))),
+        cartaBar(d.tingkatan, d.kpi));
+
+      const senarai = d.perhatian.length
+        ? el('div', { class: 'senarai' }, d.perhatian.map((k) => el('div', { class: 'item' },
+            el('div', {}, el('b', {}, tajukKelas(k.kelas) + ' (' + k.label + ')'),
+              el('small', {}, 'Hadir: ' + k.hadir + '/' + k.jumlah + ' (' + (k.jumlah - k.hadir) + ' tak hadir)')),
+            el('div', { class: 'pct ' + (k.peratus < d.kpi - 0.1 ? 'merah' : 'jingga') }, pct(k.peratus)))))
+        : el('div', { class: 'kosong' }, 'Semua kelas mencapai sasaran.');
+
+      const perhatian = el('section', { class: 'kad' },
+        el('div', { class: 'kepala-kecil' },
+          el('h3', {}, 'Kelas perlu perhatian'),
+          el('span', { class: 'lencana bawah' }, d.perhatian.length + ' kelas < ' + pct(d.kpi, 0))),
+        el('p', { class: 'sub' }, 'Disusun dari peratus kehadiran paling rendah'),
+        senarai);
+
+      $('kandungan').replaceChildren(kpi, el('div', { class: 'dua' }, carta, perhatian));
+    }
+
+    function kadKpi(label, nilai, bawah) {
+      return el('div', { class: 'kad' },
+        el('div', { class: 'label' }, label),
+        el('div', { class: 'nilai' }, nilai),
+        el('div', { class: 'bawah' }, bawah));
+    }
+
+    /* ---------------- Analisis Kelas ---------------- */
+    const susun = { kunci: 'peratus', naik: true };
+    let tapisTingkatan = 'semua';
+
+    function barMini(p, kpi) {
+      const lebar = Math.max(0, Math.min(100, p * 100));
+      return el('span', { class: 'bar-mini' },
+        el('span', { style: `width:${lebar}%;background:${p >= kpi ? 'var(--utama)' : 'var(--amaran-bar)'}` }),
+        el('i', { style: `left:${kpi * 100}%` }));
+    }
+
+    function selPeratus(p, kpi, hadir, jumlah) {
+      return el('td', { class: 'n' },
+        el('b', { class: p >= kpi ? 'hijau' : (p < kpi - 0.1 ? 'merah' : 'jingga') }, pct(p, 2)), barMini(p, kpi),
+        hadir != null ? el('span', { class: 'kecil-sahaja' }, hadir + '/' + jumlah) : null);
+    }
+
+    function paparAnalisis(d) {
+      const r = d.ringkasan;
+      $('subtajuk').textContent = d.tempoh === 'semua'
+        ? 'Purata berwajaran (jumlah hadir / jumlah murid) bagi semua tarikh'
+        : 'Kehadiran pada ' + tarikhPanjang(d.tempoh);
+      if (!r.bilKelas) {
+        $('kandungan').replaceChildren(el('div', { class: 'kad kosong' }, 'Belum ada data. Upload CSV melalui menu Import CSV IDME.'));
+        return;
+      }
+      if (!d.tingkatan.some((t) => t.nama === tapisTingkatan)) tapisTingkatan = 'semua';
+
+      const ringkas = el('section', { class: 'kad seksyen ringkas' },
+        el('div', {}, 'Tempoh', el('br'), el('b', {}, r.bilHari > 1 ? `${tarikhPanjang(r.dari)} – ${tarikhPanjang(r.hingga)}` : tarikhPanjang(r.hingga))),
+        el('div', {}, 'Bilangan hari', el('br'), el('b', {}, r.bilHari)),
+        el('div', {}, 'Kehadiran keseluruhan', el('br'), el('b', { class: r.peratus >= d.kpi ? 'hijau' : 'jingga' }, pct(r.peratus, 2))),
+        el('div', {}, 'Kelas bawah sasaran', el('br'), el('b', {}, r.bilBawah + ' / ' + r.bilKelas)));
+
+      const jT = el('table', { class: 'jadual' },
+        el('thead', {}, el('tr', {}, ['Tingkatan', 'Kelas', 'Hadir', 'Jumlah', 'Peratus', 'Bawah sasaran'].map((h, i) =>
+          el('th', { class: (i >= 1 ? 'n' : '') + (i === 2 || i === 3 || i === 5 ? ' sk' : '') }, h)))),
+        el('tbody', {}, d.tingkatan.map((t) => el('tr', { class: t.peratus < d.kpi ? 'bawah-kpi' : '' },
+          el('td', {}, el('b', {}, t.label), el('span', { class: 'sk', style: 'color:var(--teks2);margin-left:6px;font-size:12px' }, tajukKelas(t.nama))),
+          el('td', { class: 'n' }, t.bilKelas),
+          el('td', { class: 'n sk' }, t.hadir.toLocaleString('ms-MY')),
+          el('td', { class: 'n sk' }, t.jumlah.toLocaleString('ms-MY')),
+          selPeratus(t.peratus, d.kpi, t.hadir, t.jumlah),
+          el('td', { class: 'n sk' }, t.bilBawah ? el('span', { class: 'jingga' }, t.bilBawah + ' kelas') : el('span', { class: 'hijau' }, '–'))))));
+
+      const kadT = el('section', { class: 'kad seksyen' },
+        el('h3', {}, 'Purata per tingkatan'),
+        el('p', { class: 'sub' }, 'Garis merah pada bar = sasaran ' + pct(d.kpi, 0)),
+        el('div', { class: 'bungkus' }, jT));
+
+      const kadK = el('section', { class: 'kad seksyen' });
+      const lukisKelas = () => kadK.replaceChildren(...jadualKelas(d, lukisKelas));
+      lukisKelas();
+
+      $('kandungan').replaceChildren(ringkas, kadT, kadK);
+    }
+
+    function jadualKelas(d, lukisSemula) {
+      const kpi = d.kpi;
+      const banyakHari = d.ringkasan.bilHari > 1;
+      const cip = el('div', { class: 'cip' }, [{ nama: 'semua', label: 'Semua' }, ...d.tingkatan].map((t) => {
+        const b = el('button', { class: t.nama === tapisTingkatan ? 'aktif' : '' }, t.label);
+        b.addEventListener('click', () => { tapisTingkatan = t.nama; lukisSemula(); });
+        return b;
+      }));
+
+      let senarai = d.kelas.filter((k) => tapisTingkatan === 'semua' || k.tingkatan === tapisTingkatan);
+      const nilai = { tingkatan: (k) => d.tingkatan.findIndex((t) => t.nama === k.tingkatan), kelas: (k) => k.kelas,
+        hadir: (k) => k.hadir, jumlah: (k) => k.jumlah, tidak: (k) => k.jumlah - k.hadir, peratus: (k) => k.peratus };
+      senarai = senarai.slice().sort((a, b) => {
+        const x = nilai[susun.kunci](a), y = nilai[susun.kunci](b);
+        const c = typeof x === 'string' ? x.localeCompare(y) : x - y;
+        return susun.naik ? c : -c;
+      });
+
+      const lajur = [['tingkatan', 'Tingkatan', ''], ['kelas', 'Kelas', ''], ['hadir', 'Hadir', 'n sk'],
+        ['jumlah', 'Jumlah', 'n sk'], ['tidak', 'Tak hadir', 'n sk'], ['peratus', 'Peratus', 'n']];
+      const kepala = el('tr', {}, lajur.map(([k, t, c]) => {
+        const anak = susun.kunci === k ? t + (susun.naik ? ' ▲' : ' ▼') : t;
+        const th = el('th', { class: 'boleh ' + c, title: 'Klik untuk susun' }, anak);
+        th.addEventListener('click', () => {
+          susun.naik = susun.kunci === k ? !susun.naik : true;
+          susun.kunci = k;
+          lukisSemula();
+        });
+        return th;
+      }));
+      if (banyakHari) kepala.append(el('th', { class: 'n sk' }, 'Hari'));
+
+      const badan = el('tbody', {}, senarai.map((k) => {
+        const tr = el('tr', { class: k.peratus < kpi ? 'bawah-kpi' : '' },
+          el('td', {}, k.label),
+          el('td', {}, el('b', {}, tajukKelas(k.kelas))),
+          el('td', { class: 'n sk' }, k.hadir),
+          el('td', { class: 'n sk' }, k.jumlah),
+          el('td', { class: 'n sk' }, k.jumlah - k.hadir),
+          selPeratus(k.peratus, kpi, k.hadir, k.jumlah));
+        if (banyakHari) tr.append(el('td', { class: 'n sk' }, k.bilHari));
+        return tr;
+      }));
+
+      const bawah = senarai.filter((k) => k.peratus < kpi).length;
+      return [
+        el('h3', {}, 'Semua kelas'),
+        el('p', { class: 'sub' }, `${senarai.length} kelas dipaparkan, ${bawah} bawah sasaran. Klik tajuk lajur untuk susun.`),
+        cip,
+        el('div', { class: 'bungkus' }, el('table', { class: 'jadual' }, el('thead', {}, kepala), badan)),
+      ];
+    }
+
+    /* ---------------- Padam Data (admin) ---------------- */
+    function paparPadam(d) {
+      $('subtajuk').textContent = 'Padam semua data kelas bagi satu tarikh, contohnya bila CSV diupload dengan tarikh yang salah.';
+      const bahagian = [];
+      if (notisPadam) bahagian.push(el('div', { class: 'notis ' + (notisPadam.ok ? 'ok' : 'ralat') }, notisPadam.mesej));
+      bahagian.push(el('div', { class: 'notis info' },
+        'Data yang dipadam tidak boleh dipulihkan dari web app. Selepas padam, upload semula CSV dengan tarikh yang betul melalui Import CSV IDME.'));
+
+      if (!d.tarikh.length) {
+        bahagian.push(el('div', { class: 'kad kosong' }, 'Tiada data dalam sistem.'));
+        $('kandungan').replaceChildren(...bahagian);
+        return;
+      }
+
+      const badan = el('tbody', {});
+      d.tarikh.forEach((t) => {
+        const tindakan = el('td', { class: 'n' });
+        const butang = el('button', { class: 'butang bahaya', type: 'button' }, 'Padam');
+        butang.addEventListener('click', () => bukaSahkan(tindakan, t));
+        tindakan.append(butang);
+        badan.append(el('tr', {},
+          el('td', {}, el('b', {}, tarikhPanjang(t.iso)), el('span', { class: 'kecil-sahaja' }, t.bilKelas + ' kelas')),
+          el('td', { class: 'n sk' }, t.bilKelas),
+          el('td', { class: 'n sk' }, t.hadir + ' / ' + t.jumlah),
+          el('td', { class: 'n sk' }, pct(t.peratus, 2)),
+          tindakan));
+      });
+      bahagian.push(el('section', { class: 'kad seksyen' },
+        el('h3', {}, 'Tarikh yang ada data'),
+        el('p', { class: 'sub' }, d.tarikh.length + ' tarikh, terbaru di atas'),
+        el('div', { class: 'bungkus' }, el('table', { class: 'jadual' },
+          el('thead', {}, el('tr', {}, el('th', {}, 'Tarikh'), el('th', { class: 'n sk' }, 'Kelas'),
+            el('th', { class: 'n sk' }, 'Hadir / Jumlah'), el('th', { class: 'n sk' }, 'Peratus'), el('th', { class: 'n' }, ''))),
+          badan))));
+      $('kandungan').replaceChildren(...bahagian);
+    }
+
+    // Pengesahan dalam baris: pengguna mesti taip tarikh dd/mm/yyyy.
+    function bukaSahkan(sel, t) {
+      const sasaran = t.iso.split('-').reverse().join('/');
+      const input = el('input', { type: 'text', placeholder: sasaran, 'aria-label': 'Taip ' + sasaran + ' untuk sahkan', inputmode: 'numeric' });
+      const padam = el('button', { class: 'butang bahaya-penuh', type: 'button', disabled: '' }, 'Padam ' + t.bilKelas + ' kelas');
+      const batal = el('button', { class: 'butang', type: 'button' }, 'Batal');
+      input.addEventListener('input', () => { padam.disabled = input.value.trim() !== sasaran; });
+      batal.addEventListener('click', () => muat());
+      padam.addEventListener('click', () => {
+        padam.disabled = true; batal.disabled = true; input.disabled = true;
+        padam.textContent = 'Memadam...';
+        google.script.run
+          .withSuccessHandler((h) => { notisPadam = h; muat(); })
+          .withFailureHandler((e) => { notisPadam = { ok: false, mesej: 'Ralat pelayan: ' + (e && e.message ? e.message : e) }; muat(); })
+          .padamDataWeb(t.iso, input.value.trim());
+      });
+      sel.replaceChildren(el('div', { class: 'sahkan' },
+        el('span', { style: 'font-size:12px;color:var(--teks2)' }, 'Taip ', el('b', {}, sasaran), ' untuk sahkan'),
+        input, padam, batal));
+      input.focus();
+    }
+
+    /* ---------------- Trend Kehadiran ---------------- */
+    const WARNA_SEKOLAH = '#0f766e', WARNA_PILIHAN = '#7c3aed';
+
+    function beza(kini, dulu) {
+      if (kini == null || dulu == null) return el('span', { style: 'color:var(--teks2)' }, '–');
+      const b = (kini - dulu) * 100;
+      if (Math.abs(b) < 0.005) return el('span', { style: 'color:var(--teks2)' }, '0.00');
+      return el('span', { class: b > 0 ? 'naik' : 'turun' }, (b > 0 ? '▲ +' : '▼ ') + b.toFixed(2));
+    }
+
+    function paparTrend(d) {
+      pilihTrend = d.pilih;
+      d.labelPilihan = tajukKelas(d.labelPilihan);
+      const r = d.ringkasan;
+      const teksJulat = d.julat === 'semua' ? 'semua tarikh' : d.julat + ' hari data terakhir';
+      $('subtajuk').textContent = 'Peratus kehadiran harian bagi ' + teksJulat + ' (hari tanpa data tidak dikira)';
+      if (!r.bilHari) {
+        $('kandungan').replaceChildren(el('div', { class: 'kad kosong' }, 'Belum ada data. Upload CSV melalui menu Import CSV IDME.'));
+        return;
+      }
+
+      const ringkas = el('section', { class: 'kad seksyen ringkas' },
+        el('div', {}, 'Bilangan hari', el('br'), el('b', {}, r.bilHari)),
+        el('div', {}, 'Purata sekolah', el('br'), el('b', { class: r.purataSekolah >= d.kpi ? 'hijau' : 'jingga' }, pct(r.purataSekolah, 2))),
+        d.pilih ? el('div', {}, 'Purata ' + d.labelPilihan, el('br'), el('b', { style: 'color:' + WARNA_PILIHAN }, pct(r.purataPilihan, 2))) : null,
+        el('div', {}, 'Tertinggi', el('br'), el('b', {}, pct(r.tertinggi.peratus) + ' '), el('small', {}, tarikhPanjang(r.tertinggi.iso))),
+        el('div', {}, 'Terendah', el('br'), el('b', {}, pct(r.terendah.peratus) + ' '), el('small', {}, tarikhPanjang(r.terendah.iso))),
+        el('div', {}, 'Hari capai sasaran', el('br'), el('b', {}, r.hariCapai + ' / ' + r.bilHari)));
+
+      // Pilihan bandingan: tingkatan atau kelas.
+      const sel = el('select', { id: 'pilihTrend', 'aria-label': 'Bandingkan dengan' },
+        el('option', { value: '' }, '— Sekolah sahaja —'),
+        el('optgroup', { label: 'Tingkatan' }, d.senaraiPilihan.tingkatan.map((t) => el('option', { value: t.nilai }, t.label + ' (' + tajukKelas(t.nama) + ')'))),
+        el('optgroup', { label: 'Kelas' }, d.senaraiPilihan.kelas.map((k) => el('option', { value: k.nilai }, k.label + ' ' + tajukKelas(k.kelas)))));
+      sel.value = d.pilih;
+      sel.addEventListener('change', () => { pilihTrend = sel.value; muat(); });
+
+      const carta = el('section', { class: 'kad seksyen' },
+        el('h3', {}, 'Peratus kehadiran mengikut tarikh'),
+        el('div', { class: 'pilih-trend', style: 'margin-top:10px' }, el('label', { for: 'pilihTrend', style: 'color:var(--teks2);font-size:13px' }, 'Bandingkan dengan'), sel),
+        el('div', { class: 'legenda' },
+          el('span', {}, el('i', { style: 'background:' + WARNA_SEKOLAH }), 'Sekolah'),
+          d.pilih ? el('span', {}, el('i', { style: 'background:' + WARNA_PILIHAN }), d.labelPilihan) : null,
+          el('span', {}, el('i', { style: 'background:var(--merah);height:2px' }), 'Sasaran ' + pct(d.kpi, 0))),
+        r.bilHari === 1 ? el('p', { class: 'sub' }, 'Baru ada data untuk satu hari. Garisan trend akan terbentuk selepas data beberapa hari diupload.') : null,
+        cartaGaris(d));
+
+      const baris = d.siri.slice().reverse();
+      const jadual = el('table', { class: 'jadual' },
+        el('thead', {}, el('tr', {},
+          el('th', {}, 'Tarikh'), el('th', { class: 'n' }, 'Sekolah'), el('th', { class: 'n' }, 'Beza'),
+          d.pilih ? [el('th', { class: 'n' }, d.labelPilihan), el('th', { class: 'n sk' }, 'Beza')] : null)),
+        el('tbody', {}, baris.map((s, i) => {
+          const dulu = baris[i + 1];
+          return el('tr', { class: s.sekolah.peratus < d.kpi ? 'bawah-kpi' : '' },
+            el('td', {}, tarikhPanjang(s.iso)),
+            selPeratus(s.sekolah.peratus, d.kpi, s.sekolah.hadir, s.sekolah.jumlah),
+            el('td', { class: 'n' }, beza(s.sekolah.peratus, dulu && dulu.sekolah.peratus)),
+            d.pilih ? [
+              s.pilihan ? selPeratus(s.pilihan.peratus, d.kpi, s.pilihan.hadir, s.pilihan.jumlah) : el('td', { class: 'n' }, '–'),
+              el('td', { class: 'n sk' }, beza(s.pilihan && s.pilihan.peratus, dulu && dulu.pilihan && dulu.pilihan.peratus)),
+            ] : null);
+        })));
+
+      const kadJadual = el('section', { class: 'kad seksyen' },
+        el('h3', {}, 'Data harian'),
+        el('p', { class: 'sub' }, 'Terbaru di atas. Beza = perubahan mata peratus berbanding hari data sebelumnya.'),
+        el('div', { class: 'bungkus' }, jadual));
+
+      $('kandungan').replaceChildren(ringkas, carta, kadJadual);
+    }
+
+    // Carta garisan SVG. Paksi X: hari data (jarak sama), paksi Y: peratus.
+    function cartaGaris(d) {
+      const siri = d.siri, kpi = d.kpi;
+      const W = Math.max(320, Math.min(900, $('kandungan').clientWidth - 40)), H = 300;
+      const kiri = 36, kanan = 16, atas = 16, bawah = 36;
+      const semua = siri.flatMap((s) => [s.sekolah.peratus, s.pilihan && s.pilihan.peratus]).filter((v) => v != null);
+      const y0 = Math.max(0, Math.floor((Math.min(kpi, ...semua) * 100 - 5) / 5) * 5);
+      const y = (p) => atas + (H - atas - bawah) * (1 - (p * 100 - y0) / (100 - y0));
+      const n = siri.length;
+      const x = (i) => (n === 1 ? (kiri + W - kanan) / 2 : kiri + (W - kiri - kanan) * i / (n - 1));
+      const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', role: 'img', 'aria-label': 'Carta trend kehadiran' });
+
+      for (let v = y0; v <= 100; v += 5) {
+        s.append(svg('line', { x1: kiri, x2: W - kanan, y1: y(v / 100), y2: y(v / 100), stroke: '#e2e8f0' }));
+        s.append(svg('text', { x: kiri - 6, y: y(v / 100) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#64748b' }, v));
+      }
+      // Label tarikh: paling banyak ~8 label supaya tak bertindih.
+      const langkah = Math.max(1, Math.ceil(n / Math.max(2, Math.floor((W - kiri - kanan) / 70))));
+      siri.forEach((p, i) => {
+        if (i % langkah !== 0 && i !== n - 1) return;
+        const [, m, dd] = p.iso.split('-');
+        s.append(svg('text', { x: x(i), y: H - bawah + 18, 'text-anchor': 'middle', 'font-size': 11, fill: '#64748b' }, dd + '/' + m));
+      });
+      s.append(svg('line', { x1: kiri, x2: W - kanan, y1: y(kpi), y2: y(kpi), stroke: '#dc2626', 'stroke-width': 1.5, 'stroke-dasharray': '6 4' }));
+
+      const garis = (ambil, warna, nama) => {
+        let laluan = '', mula = true;
+        siri.forEach((p, i) => {
+          const v = ambil(p);
+          if (v == null) { mula = true; return; }   // putus jika tiada data
+          laluan += (mula ? 'M' : 'L') + x(i).toFixed(1) + ' ' + y(v.peratus).toFixed(1) + ' ';
+          mula = false;
+        });
+        if (laluan) s.append(svg('path', { d: laluan, fill: 'none', stroke: warna, 'stroke-width': 2.5, 'stroke-linejoin': 'round' }));
+        siri.forEach((p, i) => {
+          const v = ambil(p);
+          if (v == null) return;
+          const c = svg('circle', { cx: x(i), cy: y(v.peratus), r: n > 40 ? 2.5 : 4, fill: '#fff', stroke: warna, 'stroke-width': 2 });
+          c.append(svg('title', {}, `${nama} · ${tarikhPanjang(p.iso)}: ${pct(v.peratus, 2)} (${v.hadir}/${v.jumlah})`));
+          s.append(c);
+        });
+      };
+      garis((p) => p.sekolah.peratus == null ? null : p.sekolah, WARNA_SEKOLAH, 'Sekolah');
+      if (d.pilih) garis((p) => p.pilihan, WARNA_PILIHAN, d.labelPilihan);
+      return s;
+    }
+
+    // Carta bar menegak dalam SVG. Paksi Y dari (min - 5%) ke 100%.
+    function cartaBar(data, kpi) {
+      const W = Math.max(320, Math.min(640, $('kandungan').clientWidth - 40)), H = 300, kiri = 36, bawah = 40, atas = 16, kanan = 8;
+      const minPct = Math.min(kpi, ...data.map((t) => t.peratus));
+      const y0 = Math.max(0, Math.floor((minPct * 100 - 5) / 5) * 5);
+      const y = (p) => atas + (H - atas - bawah) * (1 - (p * 100 - y0) / (100 - y0));
+      const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', role: 'img', 'aria-label': 'Carta kehadiran mengikut tingkatan' });
+
+      for (let v = y0; v <= 100; v += 5) {
+        s.append(svg('line', { x1: kiri, x2: W - kanan, y1: y(v / 100), y2: y(v / 100), stroke: '#e2e8f0' }));
+        s.append(svg('text', { x: kiri - 6, y: y(v / 100) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#64748b' }, v));
+      }
+      const lebarSlot = (W - kiri - kanan) / data.length;
+      const lebarBar = Math.min(64, lebarSlot * 0.65);
+      data.forEach((t, i) => {
+        const x = kiri + i * lebarSlot + (lebarSlot - lebarBar) / 2;
+        const top = y(t.peratus);
+        const r = svg('rect', { x, y: top, width: lebarBar, height: y(y0 / 100) - top, rx: 4,
+          fill: t.peratus >= kpi ? '#0f766e' : '#eab308' });
+        r.append(svg('title', {}, `${t.label}: ${t.hadir}/${t.jumlah} (${pct(t.peratus, 2)}), ${t.bilKelas} kelas`));
+        s.append(r);
+        s.append(svg('text', { x: x + lebarBar / 2, y: top - 5, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 600, fill: '#0f172a' }, pct(t.peratus)));
+        s.append(svg('text', { x: x + lebarBar / 2, y: H - bawah + 16, 'text-anchor': 'middle', 'font-size': lebarSlot < 50 ? 10 : 12, fill: '#334155' }, t.label));
+      });
+      s.append(svg('line', { x1: kiri, x2: W - kanan, y1: y(kpi), y2: y(kpi), stroke: '#dc2626', 'stroke-width': 1.5, 'stroke-dasharray': '6 4' }));
+      return s;
+    }
+
+    $('tarikh').addEventListener('change', (e) => { pilihan[paparan] = e.target.value; muat(); });
+    document.querySelectorAll('.menu a[data-paparan]').forEach((a) =>
+      a.addEventListener('click', () => { if (a.dataset.paparan !== paparan) tukarPaparan(a.dataset.paparan); }));
+    tukarPaparan('utama');
+  </script>
+</body>
+</html>

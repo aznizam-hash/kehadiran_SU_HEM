@@ -39,7 +39,99 @@ function kumpulBlok_(baris) {
   return blok.reverse();
 }
 
+/** Cari baris tab Data untuk satu tarikh. Pulang {baris: [no baris menaik], hadir, jumlah}. */
+function cariBarisTarikh_(td, iso) {
+  const sheet = td.sheet;
+  const maxRows = sheet.getMaxRows();
+  const nilai = maxRows > 1 ? sheet.getRange(2, 1, maxRows - 1, 5).getValues() : [];
+  const baris = [];
+  let hadir = 0, jumlah = 0;
+  nilai.forEach(function (r, i) {
+    const v = r[0];
+    if (v === '' || v === null) return;
+    const vIso = v instanceof Date ? Utilities.formatDate(v, td.tz, 'yyyy-MM-dd') : String(v);
+    if (vIso === iso) {
+      baris.push(i + 2);
+      hadir += Number(r[3]) || 0;
+      jumlah += Number(r[4]) || 0;
+    }
+  });
+  return { baris: baris, hadir: hadir, jumlah: jumlah };
+}
+
+/** Padam lajur A:E sahaja (shift up) supaya ARRAYFORMULA di F2 kekal. */
+function padamBaris_(sheet, baris) {
+  kumpulBlok_(baris).forEach(function (b) {
+    sheet.getRange(b[0], 1, b[1], 5).deleteCells(SpreadsheetApp.Dimension.ROWS);
+  });
+  SpreadsheetApp.flush();
+}
+
+/** Satu baris ringkasan per tarikh (terbaru dahulu). Tiada panggilan ke Sheet. */
+function ringkasPerTarikh_(rows) {
+  const ikut = {};
+  rows.forEach(function (r) {
+    const t = ikut[r.iso] || (ikut[r.iso] = { iso: r.iso, bilKelas: 0, hadir: 0, jumlah: 0 });
+    t.bilKelas++;
+    t.hadir += r.hadir;
+    t.jumlah += r.jumlah;
+  });
+  return Object.keys(ikut).sort().reverse().map(function (k) {
+    const t = ikut[k];
+    t.peratus = t.jumlah ? t.hadir / t.jumlah : null;
+    return t;
+  });
+}
+
+/* ---------------- Web app (admin sahaja) ---------------- */
+
+/** Senarai tarikh yang ada data, untuk menu Padam Data. */
+function getSenaraiPadam() {
+  const a = semakAkses_(true);
+  const td = tabData_();
+  const rows = bacaData_(td);
+  const tarikh = ringkasPerTarikh_(rows);
+  return {
+    email: a.emel,
+    peranan: a.peranan,
+    kemaskini: tarikh.length ? tarikh[0].iso : null,
+    tarikhSemua: tarikh.map(function (t) { return t.iso; }),
+    tarikh: tarikh,
+  };
+}
+
+/**
+ * Padam semua baris satu tarikh dari web app.
+ * sahTeks mesti sama dengan tarikh dalam format dd/mm/yyyy (pengguna taip sendiri).
+ */
+function padamDataWeb(iso, sahTeks) {
+  try {
+    const a = semakAkses_(true);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(iso))) throw new Error('Tarikh tidak sah.');
+    const paparan = iso.split('-').reverse().join('/');
+    if (ddmmyyyyKeIso_(sahTeks) !== iso) {
+      throw new Error('Pengesahan tidak sepadan. Taip ' + paparan + ' untuk sahkan.');
+    }
+    const td = tabData_();
+    const lock = LockService.getScriptLock();
+    lock.waitLock(30000);
+    try {
+      const cari = cariBarisTarikh_(td, iso);
+      if (!cari.baris.length) throw new Error('Tiada data untuk ' + paparan + '. Tiada apa dipadam.');
+      padamBaris_(td.sheet, cari.baris);
+      Logger.log('Padam (web) ' + cari.baris.length + ' baris untuk ' + iso + ' oleh ' + a.emel);
+      return { ok: true, mesej: cari.baris.length + ' kelas untuk ' + paparan + ' telah dipadam (' +
+        cari.hadir + '/' + cari.jumlah + ' murid). Anda boleh upload semula tarikh yang betul.' };
+    } finally {
+      lock.releaseLock();
+    }
+  } catch (e) {
+    return { ok: false, mesej: String(e && e.message ? e.message : e) };
+  }
+}
+
 function padamTarikh() {
+  semakAkses_(true);
   const ui = SpreadsheetApp.getUi();
   const jawapan = ui.prompt('Padam data satu tarikh',
     'Masukkan tarikh yang hendak dipadam (dd/mm/yyyy):', ui.ButtonSet.OK_CANCEL);
@@ -55,20 +147,8 @@ function padamTarikh() {
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
-    const maxRows = sheet.getMaxRows();
-    const nilai = maxRows > 1 ? sheet.getRange(2, 1, maxRows - 1, 5).getValues() : [];
-    const baris = [];
-    let hadir = 0, jumlah = 0;
-    nilai.forEach(function (r, i) {
-      const v = r[0];
-      if (v === '' || v === null) return;
-      const vIso = v instanceof Date ? Utilities.formatDate(v, td.tz, 'yyyy-MM-dd') : String(v);
-      if (vIso === iso) {
-        baris.push(i + 2);
-        hadir += Number(r[3]) || 0;
-        jumlah += Number(r[4]) || 0;
-      }
-    });
+    const cari = cariBarisTarikh_(td, iso);
+    const baris = cari.baris, hadir = cari.hadir, jumlah = cari.jumlah;
 
     if (baris.length === 0) { ui.alert('Tiada data untuk ' + paparan + '. Tiada apa dipadam.'); return; }
 
@@ -79,11 +159,8 @@ function padamTarikh() {
       ui.ButtonSet.YES_NO);
     if (sah !== ui.Button.YES) { ui.alert('Dibatalkan. Tiada apa dipadam.'); return; }
 
-    kumpulBlok_(baris).forEach(function (b) {
-      sheet.getRange(b[0], 1, b[1], 5).deleteCells(SpreadsheetApp.Dimension.ROWS);
-    });
-    SpreadsheetApp.flush();
-    Logger.log('Padam ' + baris.length + ' baris untuk ' + iso);
+    padamBaris_(sheet, baris);
+    Logger.log('Padam ' + baris.length + ' baris untuk ' + iso + ' oleh ' + Session.getActiveUser().getEmail());
     ui.alert(baris.length + ' baris untuk ' + paparan + ' telah dipadam. Anda boleh upload semula tarikh yang betul.');
   } finally {
     lock.releaseLock();

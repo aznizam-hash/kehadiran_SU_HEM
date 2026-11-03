@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <style>
+    body { margin: 0; font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif; background: #f1f5f9; color: #0f172a; display: grid; place-items: center; min-height: 100vh; padding: 16px; box-sizing: border-box; }
+    .kad { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; max-width: 420px; text-align: center; }
+    .logo { width: 44px; height: 44px; border-radius: 10px; background: #0f766e; color: #fff; font-weight: 700; font-size: 20px; display: grid; place-items: center; margin: 0 auto 12px; }
+    h1 { font-size: 18px; margin: 0 0 8px; }
+    p { color: #64748b; font-size: 14px; line-height: 1.5; margin: 8px 0; }
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #0f172a; }
+  </style>
+</head>
+<body>
+  <div class="kad">
+    <div class="logo">S</div>
+    <h1>Akses ditolak</h1>
+    <p><?= sebab ?></p>
+    <? if (emel) { ?><p>Anda log masuk sebagai <code><?= emel ?></code>.</p><? } ?>
+    <p>Sila hubungi SU HEM jika anda perlukan akses.</p>
+  </div>
+</body>
+</html>
