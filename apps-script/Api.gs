@@ -128,9 +128,11 @@ function ringkasDashboard_(rows, tarikhIso, kpi) {
 
 /** Dipanggil dari App.html. */
 function getDashboard(tarikhIso) {
+  const a = semakAkses_(false);
   const td = tabData_();
   const d = ringkasDashboard_(bacaData_(td), tarikhIso, SASARAN_KPI);
-  d.email = Session.getActiveUser().getEmail();
+  d.email = a.emel;
+  d.peranan = a.peranan;
   return d;
 }
 
@@ -169,9 +171,11 @@ function ringkasAnalisis_(rows, tempoh, kpi) {
 
 /** Dipanggil dari App.html. */
 function getAnalisis(tempoh) {
+  const a = semakAkses_(false);
   const td = tabData_();
   const d = ringkasAnalisis_(bacaData_(td), tempoh, SASARAN_KPI);
-  d.email = Session.getActiveUser().getEmail();
+  d.email = a.emel;
+  d.peranan = a.peranan;
   return d;
 }
 
@@ -257,8 +261,10 @@ function ringkasTrend_(rows, julat, pilih, kpi) {
 
 /** Dipanggil dari App.html. */
 function getTrend(julat, pilih) {
+  const a = semakAkses_(false);
   const td = tabData_();
   const d = ringkasTrend_(bacaData_(td), julat, pilih, SASARAN_KPI);
-  d.email = Session.getActiveUser().getEmail();
+  d.email = a.emel;
+  d.peranan = a.peranan;
   return d;
 }

@@ -15,6 +15,7 @@ const F_SENARAI_TARIKH =
   '=IFERROR(ARRAYFORMULA(TEXT(SORT(UNIQUE(FILTER(Data!A2:A,Data!A2:A<>"")),1,FALSE),"dd/mm/yyyy")),"")';
 
 function binaDashboard() {
+  semakAkses_(true);
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss.getSheetByName(TAB_DATA)) throw new Error('Tab Data tiada. Jalankan setupSistem() dahulu.');
 

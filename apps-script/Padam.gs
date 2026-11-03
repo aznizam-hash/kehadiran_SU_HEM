@@ -40,6 +40,7 @@ function kumpulBlok_(baris) {
 }
 
 function padamTarikh() {
+  semakAkses_(true);
   const ui = SpreadsheetApp.getUi();
   const jawapan = ui.prompt('Padam data satu tarikh',
     'Masukkan tarikh yang hendak dipadam (dd/mm/yyyy):', ui.ButtonSet.OK_CANCEL);
