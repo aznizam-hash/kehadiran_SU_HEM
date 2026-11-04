@@ -7,7 +7,7 @@ const assert = require('assert');
 const ctx = {};
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'apps-script', 'Api.gs'), 'utf8') +
-  '\nthis.ringkas = ringkasDashboard_; this.label = labelTingkatan_; this.analisis = ringkasAnalisis_; this.trend = ringkasTrend_;', ctx);
+  '\nthis.ringkas = ringkasDashboard_; this.label = labelTingkatan_; this.analisis = ringkasAnalisis_; this.trend = ringkasTrend_; this.laporan = ringkasLaporan_;', ctx);
 
 assert.strictEqual(ctx.label('TINGKATAN SATU'), 'T1');
 assert.strictEqual(ctx.label('TINGKATAN ENAM SEM 1'), 'T6 Sem 1');
@@ -103,4 +103,19 @@ t = ctx.trend([], 'semua', '', 0.95);
 assert.strictEqual(t.siri.length, 0);
 assert.strictEqual(t.ringkasan.purataSekolah, null);
 
+
+// Laporan
+let L = ctx.laporan(tr, '2026-10-27', '2026-10-29', 0.95);
+assert.strictEqual(L.ringkasan.bilHari, 3);
+assert.strictEqual(`${L.ringkasan.hadir}/${L.ringkasan.jumlah}`, `${(16 + 17 + 18) + 60}/120`);
+assert.strictEqual(L.harian.map((h) => h.iso).join(','), '2026-10-27,2026-10-28,2026-10-29');
+assert.strictEqual(L.ringkasan.hariCapai, 1);                 // hanya 29/10 = 38/40 = 95%
+assert.strictEqual(L.bawahKpi.map((k) => k.kelas + '/' + k.tingkatan).join(','), 'A/TINGKATAN SATU');
+assert.strictEqual(L.kelas.map((k) => k.tingkatan).join(','), 'TINGKATAN SATU,TINGKATAN DUA');   // semua kelas, susunan asal
+L = ctx.laporan(tr, null, null, 0.95);                         // lalai: tarikh terkini sahaja
+assert.strictEqual(L.dari + '|' + L.hingga, '2026-10-30|2026-10-30');
+L = ctx.laporan(tr, '2026-10-30', '2026-10-26', 0.95);         // terbalik -> ditukar
+assert.strictEqual(L.dari + '|' + L.ringkasan.bilHari, '2026-10-26|5');
+L = ctx.laporan([], null, null, 0.95);
+assert.strictEqual(L.ringkasan.peratus, null);
 console.log('api.test.js: semua lulus');

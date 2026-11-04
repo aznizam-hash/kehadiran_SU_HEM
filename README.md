@@ -7,8 +7,8 @@ Google Sheets + Apps Script. Upload CSV kehadiran harian dari IDME, simpan per k
 | Fail | Isi |
 |---|---|
 | `apps-script/Code.gs` | `setupSistem`, `parseKehadiran`, `simpanKehadiran_`, `prosesUpload`, `doGet`, `testParse` |
-| `apps-script/Api.gs` | `getDashboard`, `getAnalisis`, `getTrend` — data untuk web app (sasaran KPI dari tab Tetapan, lalai 95%) |
-| `apps-script/App.html` | Web app (URL utama): Dashboard Utama, Analisis Kelas, Trend Kehadiran; Import CSV (butang Hantar; pembetulan Excel perlu disahkan) dan Padam Data untuk admin. Borang upload lama masih di `?p=upload` |
+| `apps-script/Api.gs` | `getDashboard`, `getAnalisis`, `getTrend`, `getLaporan` — data untuk web app (sasaran KPI dari tab Tetapan, lalai 95%) |
+| `apps-script/App.html` | Web app (URL utama): Dashboard Utama, Analisis Kelas, Trend Kehadiran, Laporan SU HEM (A4, cetak/PDF); Import CSV (butang Hantar; pembetulan Excel perlu disahkan) dan Padam Data untuk admin. Borang upload lama masih di `?p=upload` |
 | `apps-script/Dashboard.gs` | `binaDashboard` — bina tab Dashboard, Analisis, Trend |
 | `apps-script/Akses.gs`, `apps-script/Ditolak.html` | Kawalan akses: tab **Pengguna** (admin / lihat), halaman akses ditolak |
 | `apps-script/Log.gs` | Sejarah Import: tab **Log** (dicipta automatik), rekod setiap import dan padam |
