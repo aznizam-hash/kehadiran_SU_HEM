@@ -317,6 +317,7 @@ function ringkasLaporan_(rows, dari, hingga, kpi) {
       hariCapai: harian.filter(function (t) { return t.peratus >= kpi; }).length,
     },
     tingkatan: tingkatan,
+    kelas: kelas,   // semua kelas, susunan IDME (T1..T5, KKM, T6)
     bawahKpi: kelas.filter(function (k) { return k.peratus < kpi; })
       .sort(function (a, b) { return a.peratus - b.peratus; }),
     harian: harian,

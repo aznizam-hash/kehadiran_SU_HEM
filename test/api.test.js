@@ -111,6 +111,7 @@ assert.strictEqual(`${L.ringkasan.hadir}/${L.ringkasan.jumlah}`, `${(16 + 17 + 1
 assert.strictEqual(L.harian.map((h) => h.iso).join(','), '2026-10-27,2026-10-28,2026-10-29');
 assert.strictEqual(L.ringkasan.hariCapai, 1);                 // hanya 29/10 = 38/40 = 95%
 assert.strictEqual(L.bawahKpi.map((k) => k.kelas + '/' + k.tingkatan).join(','), 'A/TINGKATAN SATU');
+assert.strictEqual(L.kelas.map((k) => k.tingkatan).join(','), 'TINGKATAN SATU,TINGKATAN DUA');   // semua kelas, susunan asal
 L = ctx.laporan(tr, null, null, 0.95);                         // lalai: tarikh terkini sahaja
 assert.strictEqual(L.dari + '|' + L.hingga, '2026-10-30|2026-10-30');
 L = ctx.laporan(tr, '2026-10-30', '2026-10-26', 0.95);         // terbalik -> ditukar

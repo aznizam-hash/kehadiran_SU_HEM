@@ -673,7 +673,7 @@
     }
 
     /* ---------------- Laporan SU HEM ---------------- */
-    const lap = { jenis: 'harian', dari: null, hingga: null };
+    const lap = { jenis: 'harian', dari: null, hingga: null, senarai: 'semua' };
 
     function paparLaporan(d) {
       $('subtajuk').textContent = 'Laporan A4 untuk dicetak atau disimpan sebagai PDF.';
@@ -709,6 +709,12 @@
         medan.push(el('div', {}, el('label', { for: 'lapDari' }, 'Dari'), pilihTarikh('lapDari', lap.dari, (v) => { lap.dari = v; })));
         medan.push(el('div', {}, el('label', { for: 'lapHingga' }, 'Hingga'), pilihTarikh('lapHingga', lap.hingga, (v) => { lap.hingga = v; })));
       }
+      const togolSenarai = el('div', { class: 'togol' }, [['semua', 'Semua kelas'], ['bawah', 'Bawah KPI sahaja']].map(([k, t]) => {
+        const b = el('button', { type: 'button', class: lap.senarai === k ? 'aktif' : '' }, t);
+        b.addEventListener('click', () => { if (lap.senarai !== k) { lap.senarai = k; paparLaporan(d); } });
+        return b;
+      }));
+      medan.push(el('div', {}, el('label', {}, 'Senarai kelas'), togolSenarai));
       const cetak = el('button', { class: 'butang-utama', type: 'button' }, ikon('muatTurun'), 'Cetak / Simpan PDF');
       cetak.addEventListener('click', () => window.print());
       medan.push(el('div', { style: 'margin-left:auto' }, cetak));
@@ -744,7 +750,20 @@
           el('tr', {}, el('th', {}, 'Jumlah'), el('th', { class: 'n' }, r.bilKelas), el('th', { class: 'n' }, r.hadir),
             el('th', { class: 'n' }, r.jumlah), el('th', { class: 'n' }, pct(r.peratus, 2)), el('th', { class: 'n' }, r.bilKelas - r.kelasCapai))));
 
-      const jB = d.bawahKpi.length
+      const semuaKelas = lap.senarai === 'semua';
+      const tajukC = semuaKelas
+        ? 'C. Kehadiran semua kelas (' + d.kelas.length + ' kelas, ' + d.bawahKpi.length + ' bawah KPI)'
+        : 'C. Kelas di bawah sasaran KPI (' + d.bawahKpi.length + ' kelas)';
+      const jB = semuaKelas
+        ? el('table', {},
+          el('thead', {}, el('tr', {}, el('th', { class: 'n' }, 'Bil.'), el('th', {}, 'Tingkatan'), el('th', {}, 'Kelas'),
+            el('th', { class: 'n' }, 'Hadir / Jumlah'), el('th', { class: 'n' }, 'Tidak hadir'), el('th', { class: 'n' }, 'Peratus'), el('th', {}, 'Status'))),
+          el('tbody', {}, d.kelas.map((k, i) => el('tr', {},
+            el('td', { class: 'n' }, i + 1), el('td', {}, tajukKelas(k.tingkatan)), el('td', {}, tajukKelas(k.kelas)),
+            el('td', { class: 'n' }, k.hadir + ' / ' + k.jumlah), el('td', { class: 'n' }, k.jumlah - k.hadir),
+            el('td', { class: 'n' }, pct(k.peratus, 2)),
+            el('td', {}, k.peratus >= kpi ? 'Capai' : el('b', {}, 'Bawah KPI'))))))
+        : d.bawahKpi.length
         ? el('table', {},
           el('thead', {}, el('tr', {}, el('th', { class: 'n' }, 'Bil.'), el('th', {}, 'Tingkatan'), el('th', {}, 'Kelas'),
             el('th', { class: 'n' }, 'Hadir / Jumlah'), el('th', { class: 'n' }, 'Peratus'))),
@@ -769,7 +788,7 @@
         el('hr'),
         el('h2', {}, 'A. Ringkasan'), ringkas,
         el('h2', {}, 'B. Kehadiran mengikut tingkatan'), jT,
-        el('h2', {}, 'C. Kelas di bawah sasaran KPI (' + d.bawahKpi.length + ' kelas)'), jB,
+        el('h2', {}, tajukC), jB,
         ...jH,
         el('h2', {}, (satuHari ? 'D' : 'E') + '. Ulasan'), el('div', { class: 'ulasan' }),
         el('div', { class: 'tandatangan' }, ttd('Disediakan oleh:'), ttd('Disemak oleh:')),
